@@ -1,0 +1,28 @@
+{
+  "nodos": [
+    {"id": "B1", "nombre": "Base Norte", "tipo": "BASE"},
+    {"id": "B2", "nombre": "Base Sur", "tipo": "BASE"},
+    {"id": "Z1", "nombre": "Chapinero", "tipo": "ZONA"},
+    {"id": "Z2", "nombre": "Usaquén", "tipo": "ZONA"},
+    {"id": "Z3", "nombre": "Suba", "tipo": "ZONA"},
+    {"id": "Z4", "nombre": "Teusaquillo", "tipo": "ZONA"},
+    {"id": "Z5", "nombre": "Kennedy", "tipo": "ZONA"},
+    {"id": "Z6", "nombre": "Bosa", "tipo": "ZONA"},
+    {"id": "Z7", "nombre": "Fontibón", "tipo": "ZONA"}
+  ],
+  "tecnicos": [
+    {"id": "T1", "nombre": "Ana", "base_id": "B1", "disponible": true},
+    {"id": "T2", "nombre": "Luis", "base_id": "B1", "disponible": false},
+    {"id": "T3", "nombre": "Marta", "base_id": "B2", "disponible": true}
+  ],
+  "trayectos": [
+    {"origen": "B1", "destino": "Z1", "minutos": 4, "bidireccional": true},
+    {"origen": "B1", "destino": "Z2", "minutos": 6, "bidireccional": true},
+    {"origen": "B1", "destino": "Z3", "minutos": 15, "bidireccional": true},
+    {"origen": "Z2", "destino": "Z3", "minutos": 7, "bidireccional": true},
+    {"origen": "Z1", "destino": "Z4", "minutos": 5, "bidireccional": true},
+    {"origen": "Z4", "destino": "Z5", "minutos": 12, "bidireccional": false},
+    {"origen": "B2", "destino": "Z5", "minutos": 5, "bidireccional": true},
+    {"origen": "Z5", "destino": "Z6", "minutos": 4, "bidireccional": true}
+  ]
+}
