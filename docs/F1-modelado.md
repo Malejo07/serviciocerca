@@ -66,3 +66,34 @@ explícito si se puede recorrer al revés.
 
 Las validaciones están en el **dominio** (`app/dominio/red.py`), no solo en la API.
 Así se cumplen sin importar desde dónde se use la red: API, pruebas o algoritmos.
+
+## 7. Red de ejemplo (`app/datos/red_ejemplo.json`)
+
+```
+        4          5             12 (solo ida)
+  B1 ------- Z1 ------- Z4 ---------------> Z5 ------- B2
+  | \                                       |    5
+ 6|  \ 15                                  4|
+  |   \                                     |
+  Z2 --- Z3                                 Z6
+     7
+                    Z7 (aislada, sin trayectos)
+```
+
+- **Técnicos:** Ana (B1, disponible), Luis (B1, no disponible), Marta (B2, disponible).
+- `Z4 -> Z5` es de **un solo sentido**: desde B1 se llega a Z5 y Z6, pero desde B2 no se llega a B1.
+- `Z7` está **aislada**. Servirá para probar "zona sin conexión" en F2.
+- `B1 -> Z3` directo cuesta 15 (1 tramo), pero `B1 -> Z2 -> Z3` cuesta 13 (2 tramos).
+  Servirá para el caso de F3 donde menos tramos no es lo mismo que menor costo.
+
+## 8. Cumplimiento de F1
+
+| Requisito del brief | Dónde se cumple |
+|---------------------|-----------------|
+| Registrar entidades y conexiones válidas | `RedCobertura.agregar_nodo/agregar_tecnico/agregar_trayecto`, `POST /api/nodos`, `/api/tecnicos`, `/api/trayectos` |
+| Especificar qué representa nodo y arista | Secciones 2, 3 y 5 de este documento |
+| Validar identificadores, duplicados y pesos positivos | `app/dominio/red.py` + `tests/test_red.py` |
+| Consultar la red por API e interfaz mínima | `GET /api/red`, página `/`, documentación automática en `/docs` |
+| Justificar si una conexión se recorre en ambos sentidos | Sección 4 + campo `bidireccional` |
+
+Pruebas: `pytest -v` ejecuta 41 pruebas (dominio y API).
