@@ -84,3 +84,9 @@ def test_cargar_ejemplo_y_vaciar(cliente):
 
     cliente.delete("/api/red")
     assert cliente.get("/api/red").json()["nodos"] == []
+
+
+def test_interfaz_minima_disponible(cliente):
+    r = cliente.get("/")
+    assert r.status_code == 200
+    assert "ServicioCerca" in r.text

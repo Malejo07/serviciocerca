@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ServicioCerca — Red de cobertura</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0 auto; max-width: 1100px; padding: 16px; background: #f6f7f9; color: #222; }
+    h1 { margin-bottom: 4px; }
+    .subtitulo { color: #666; margin-top: 0; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .tarjeta { background: #fff; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+    .tarjeta h2 { margin-top: 0; font-size: 1.1rem; }
+    label { display: block; font-size: .85rem; margin-top: 8px; }
+    input, select { width: 100%; padding: 6px; box-sizing: border-box; }
+    input[type=checkbox] { width: auto; }
+    button { margin-top: 12px; padding: 8px 14px; border: 0; border-radius: 6px; background: #2563eb; color: #fff; cursor: pointer; }
+    button.secundario { background: #6b7280; }
+    #mensaje { margin: 16px 0; padding: 10px; border-radius: 6px; display: none; }
+    #mensaje.ok { display: block; background: #dcfce7; color: #166534; }
+    #mensaje.error { display: block; background: #fee2e2; color: #991b1b; }
+    table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+    th, td { text-align: left; padding: 6px; border-bottom: 1px solid #e5e7eb; }
+    .acciones { margin: 16px 0; }
+  </style>
+</head>
+<body>
+  <h1>ServicioCerca</h1>
+  <p class="subtitulo">Red de cobertura: bases, zonas, técnicos y trayectos (tiempo en minutos).</p>
+
+  <div class="acciones">
+    <button onclick="cargarEjemplo()">Cargar red de ejemplo</button>
+    <button class="secundario" onclick="vaciarRed()">Vaciar red</button>
+  </div>
+
+  <div id="mensaje"></div>
+
+  <div class="grid">
+    <form class="tarjeta" id="form-nodo">
+      <h2>Registrar nodo</h2>
+      <label>ID <input name="id" required placeholder="Z1"></label>
+      <label>Nombre <input name="nombre" required placeholder="Chapinero"></label>
+      <label>Tipo
+        <select name="tipo"><option value="ZONA">Zona</option><option value="BASE">Base</option></select>
+      </label>
+      <button type="submit">Guardar nodo</button>
+    </form>
+
+    <form class="tarjeta" id="form-tecnico">
+      <h2>Registrar técnico</h2>
+      <label>ID <input name="id" required placeholder="T1"></label>
+      <label>Nombre <input name="nombre" required placeholder="Ana"></label>
+      <label>Base <input name="base_id" required placeholder="B1"></label>
+      <label><input type="checkbox" name="disponible" checked> Disponible</label>
+      <button type="submit">Guardar técnico</button>
+    </form>
+
+    <form class="tarjeta" id="form-trayecto">
+      <h2>Registrar trayecto</h2>
+      <label>Origen <input name="origen" required placeholder="B1"></label>
+      <label>Destino <input name="destino" required placeholder="Z1"></label>
+      <label>Minutos <input name="minutos" required type="number" step="any" placeholder="10"></label>
+      <label><input type="checkbox" name="bidireccional" checked> Se recorre en ambos sentidos</label>
+      <button type="submit">Guardar trayecto</button>
+    </form>
+  </div>
+
+  <div class="grid" style="margin-top:16px">
+    <div class="tarjeta"><h2>Nodos</h2><table id="tabla-nodos"></table></div>
+    <div class="tarjeta"><h2>Técnicos</h2><table id="tabla-tecnicos"></table></div>
+    <div class="tarjeta"><h2>Trayectos</h2><table id="tabla-trayectos"></table></div>
+  </div>
+
+  <script>
+    // Muestra un mensaje de éxito o de error devuelto por la API.
+    function mostrarMensaje(texto, tipo) {
+      const caja = document.getElementById("mensaje");
+      caja.textContent = texto;
+      caja.className = tipo;
+    }
+
+    // Llama a la API y lanza un error con el mensaje legible si falla.
+    async function llamarApi(metodo, url, cuerpo) {
+      const opciones = { method: metodo, headers: { "Content-Type": "application/json" } };
+      if (cuerpo) opciones.body = JSON.stringify(cuerpo);
+      const respuesta = await fetch(url, opciones);
+      const datos = await respuesta.json();
+      if (!respuesta.ok) {
+        const detalles = datos.detalles ? " " + datos.detalles.join("; ") : "";
+        throw new Error(datos.error + detalles);
+      }
+      return datos;
+    }
+
+    // Llena una tabla usando textContent (evita inyectar HTML con datos del usuario).
+    function llenarTabla(idTabla, encabezados, filas) {
+      const tabla = document.getElementById(idTabla);
+      tabla.innerHTML = "";
+      const trEnc = tabla.insertRow();
+      encabezados.forEach(h => { const th = document.createElement("th"); th.textContent = h; trEnc.appendChild(th); });
+      filas.forEach(fila => {
+        const tr = tabla.insertRow();
+        fila.forEach(valor => { tr.insertCell().textContent = valor; });
+      });
+    }
+
+    async function refrescar() {
+      const red = await llamarApi("GET", "/api/red");
+      llenarTabla("tabla-nodos", ["ID", "Nombre", "Tipo"], red.nodos.map(n => [n.id, n.nombre, n.tipo]));
+      llenarTabla("tabla-tecnicos", ["ID", "Nombre", "Base", "Disponible"],
+        red.tecnicos.map(t => [t.id, t.nombre, t.base_id, t.disponible ? "Sí" : "No"]));
+      llenarTabla("tabla-trayectos", ["Origen", "Destino", "Minutos"],
+        red.trayectos.map(t => [t.origen, t.destino, t.minutos]));
+    }
+
+    // Conecta un formulario con un endpoint POST.
+    function conectarFormulario(idForm, url, convertir) {
+      document.getElementById(idForm).addEventListener("submit", async (evento) => {
+        evento.preventDefault();
+        const form = evento.target;
+        try {
+          await llamarApi("POST", url, convertir(form));
+          mostrarMensaje("Registrado correctamente.", "ok");
+          form.reset();
+          await refrescar();
+        } catch (error) {
+          mostrarMensaje(error.message, "error");
+        }
+      });
+    }
+
+    conectarFormulario("form-nodo", "/api/nodos", f => ({
+      id: f.id.value, nombre: f.nombre.value, tipo: f.tipo.value
+    }));
+    conectarFormulario("form-tecnico", "/api/tecnicos", f => ({
+      id: f.id.value, nombre: f.nombre.value, base_id: f.base_id.value, disponible: f.disponible.checked
+    }));
+    conectarFormulario("form-trayecto", "/api/trayectos", f => ({
+      origen: f.origen.value, destino: f.destino.value,
+      minutos: Number(f.minutos.value), bidireccional: f.bidireccional.checked
+    }));
+
+    async function cargarEjemplo() {
+      const r = await llamarApi("POST", "/api/red/ejemplo");
+      mostrarMensaje(r.mensaje, "ok");
+      await refrescar();
+    }
+
+    async function vaciarRed() {
+      const r = await llamarApi("DELETE", "/api/red");
+      mostrarMensaje(r.mensaje, "ok");
+      await refrescar();
+    }
+
+    refrescar();
+  </script>
+</body>
+</html>
