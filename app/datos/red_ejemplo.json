@@ -2,13 +2,13 @@
   "nodos": [
     {"id": "B1", "nombre": "Base Norte", "tipo": "BASE"},
     {"id": "B2", "nombre": "Base Sur", "tipo": "BASE"},
-    {"id": "Z1", "nombre": "Chapinero", "tipo": "ZONA"},
-    {"id": "Z2", "nombre": "Usaquén", "tipo": "ZONA"},
-    {"id": "Z3", "nombre": "Suba", "tipo": "ZONA"},
-    {"id": "Z4", "nombre": "Teusaquillo", "tipo": "ZONA"},
-    {"id": "Z5", "nombre": "Kennedy", "tipo": "ZONA"},
-    {"id": "Z6", "nombre": "Bosa", "tipo": "ZONA"},
-    {"id": "Z7", "nombre": "Fontibón", "tipo": "ZONA"}
+    {"id": "Z1", "nombre": "Bello", "tipo": "ZONA"},
+    {"id": "Z2", "nombre": "Castilla", "tipo": "ZONA"},
+    {"id": "Z3", "nombre": "Aranjuez", "tipo": "ZONA"},
+    {"id": "Z4", "nombre": "Manrique", "tipo": "ZONA"},
+    {"id": "Z5", "nombre": "Robledo", "tipo": "ZONA"},
+    {"id": "Z6", "nombre": "Candelaria", "tipo": "ZONA"},
+    {"id": "Z7", "nombre": "Poblado", "tipo": "ZONA"}
   ],
   "tecnicos": [
     {"id": "T1", "nombre": "Ana", "base_id": "B1", "disponible": true},
