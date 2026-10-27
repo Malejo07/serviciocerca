@@ -71,6 +71,19 @@
     <div class="tarjeta"><h2>Trayectos</h2><table id="tabla-trayectos"></table></div>
   </div>
 
+  <!-- F2: consulta de cobertura -->
+  <form class="tarjeta" id="form-cobertura" style="margin-top:16px">
+    <h2>Consultar cobertura (BFS)</h2>
+    <label>Origen (base o zona) <input name="origen" required placeholder="B1"></label>
+    <label>Zona solicitada (vacío = listar todo el alcance de la base)
+    <input name="zona" placeholder="Z5">
+    </label>
+    <button type="submit">Consultar</button>
+    <div id="resultado-cobertura" style="margin-top:12px"></div>
+    <h3>Traza del BFS</h3>
+    <table id="tabla-traza"></table>
+  </form>
+
   <script>
     // Muestra un mensaje de éxito o de error devuelto por la API.
     function mostrarMensaje(texto, tipo) {
@@ -153,6 +166,36 @@
     }
 
     refrescar();
+
+    // F2: consulta de cobertura. Si no hay zona, lista el alcance de la base.
+    document.getElementById("form-cobertura").addEventListener("submit", async (evento) => {
+      evento.preventDefault();
+      const f = evento.target;
+      const origen = f.origen.value.trim();
+      const zona = f.zona.value.trim();
+      const caja = document.getElementById("resultado-cobertura");
+      caja.textContent = "";
+      try {
+        let r;
+        if (zona) {
+          r = await llamarApi("GET", `/api/cobertura?origen=${encodeURIComponent(origen)}&zona=${encodeURIComponent(zona)}`);
+          mostrarMensaje(r.mensaje, r.cubierta ? "ok" : "error");
+          if (r.cubierta) caja.textContent = "Camino: " + r.camino.join(" → ") + ` (${r.tramos} tramo(s))`;
+        } else {
+          r = await llamarApi("GET", `/api/cobertura/alcance/${encodeURIComponent(origen)}`);
+          mostrarMensaje(r.mensaje, "ok");
+          const zonas = r.zonas_alcanzables.map(z => `${z.id} ${z.nombre} (${z.tramos})`).join(", ") || "ninguna";
+          const tecnicos = r.tecnicos_disponibles.map(t => t.nombre).join(", ") || "ninguno";
+          caja.textContent = `Alcanzables: ${zonas}. No alcanzables: ${r.zonas_no_alcanzables.join(", ") || "ninguna"}. ` +
+                             `Técnicos disponibles: ${tecnicos}.`;
+        }
+        llenarTabla("tabla-traza", ["Paso", "Se saca", "Vecinos", "Nuevos", "Cola"],
+          r.traza.map(p => [p.paso, p.actual ?? "inicio", p.vecinos.join(", "), p.nuevos.join(", "), p.cola.join(", ")]));
+      } catch (error) {
+        mostrarMensaje(error.message, "error");
+        llenarTabla("tabla-traza", [], []);
+      }
+    });
   </script>
 </body>
 </html>
