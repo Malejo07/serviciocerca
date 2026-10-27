@@ -71,6 +71,19 @@
     <div class="tarjeta"><h2>Trayectos</h2><table id="tabla-trayectos"></table></div>
   </div>
 
+  <!-- F2: consulta de cobertura -->
+  <form class="tarjeta" id="form-cobertura" style="margin-top:16px">
+    <h2>Consultar cobertura (BFS)</h2>
+    <label>Origen (base o zona) <input name="origen" required placeholder="B1"></label>
+    <label>Zona solicitada (vacío = listar todo el alcance de la base)
+    <input name="zona" placeholder="Z5">
+    </label>
+    <button type="submit">Consultar</button>
+    <div id="resultado-cobertura" style="margin-top:12px"></div>
+    <h3>Traza del BFS</h3>
+    <table id="tabla-traza"></table>
+  </form>
+
   <script>
     // Muestra un mensaje de éxito o de error devuelto por la API.
     function mostrarMensaje(texto, tipo) {
