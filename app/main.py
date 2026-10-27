@@ -7,6 +7,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse
 
 from app.dominio.carga import red_de_ejemplo
+from app.dominio.cobertura import consultar_cobertura, listar_alcance
 from app.dominio.errores import DatoInvalido, ElementoDuplicado, ElementoNoEncontrado, ErrorRed
 from app.dominio.red import RedCobertura
 from app.esquemas import NodoEntrada, RedSalida, TecnicoEntrada, TrayectoEntrada
@@ -74,6 +75,18 @@ def crear_app() -> FastAPI:
         request.app.state.red = RedCobertura()
         return {"mensaje": "Red vaciada."}
 
+    # ---------- F2: cobertura ----------
+ 
+    @app.get("/api/cobertura")
+    def cobertura_de_zona(origen: str, zona: str, red: RedCobertura = Depends(obtener_red)):
+        """¿La zona está dentro de la cobertura posible desde el origen? (BFS)"""
+        return consultar_cobertura(red, origen, zona)
+ 
+    @app.get("/api/cobertura/alcance/{base_id}")
+    def alcance_de_base(base_id: str, red: RedCobertura = Depends(obtener_red)):
+        """Zonas que se pueden alcanzar desde una base (BFS)."""
+        return listar_alcance(red, base_id)
+    
     # ---------- Interfaz mínima ----------
 
     @app.get("/", include_in_schema=False)
