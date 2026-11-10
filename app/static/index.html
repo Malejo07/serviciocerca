@@ -83,10 +83,14 @@ th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}th{col
   <aside class="lateral">
     <form class="tarjeta" id="form-cobertura">
       <h2>Consultar cobertura</h2>
-      <p class="ayuda">Haga clic en el mapa para elegir una base de origen o una zona.</p>
+      <p class="ayuda">Haga clic en el mapa para elegir una base de origen o una zona.
+        «Menor costo» calcula la ruta más rápida y necesita origen y zona.
+        «¿Qué técnico llega primero?» solo necesita la zona.</p>
       <label>Origen <input id="q-origen" name="origen" required placeholder="B1"></label>
       <label>Zona solicitada <input id="q-zona" name="zona" placeholder="Z5 (vacío: ver todo el alcance)"></label>
-      <button type="submit">Consultar</button>
+      <button type="submit">Consultar cobertura</button>
+      <button type="button" class="sec" id="btn-costo">Menor costo</button>
+      <button type="button" class="sec" id="btn-mejor">¿Qué técnico llega primero?</button>
       <div id="resultado" class="res" hidden></div>
     </form>
     <div class="tarjeta">
