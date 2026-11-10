@@ -296,8 +296,7 @@ function mostrarResultado(r, zona) {
   const tb = el("table"); tb.id = "tabla-traza"; d.appendChild(tb); c.appendChild(d);
   llenarTabla("tabla-traza", ["Paso", "Se saca", "Nuevos", "Cola"], r.traza.map(p => [p.paso, p.actual ?? "inicio", p.nuevos.join(", "), p.cola.join(", ")]));
 }
-$("#form-cobertura").addEventListener("submit", async ev => {
-  /* ---------- F3: menor costo (Dijkstra) ---------- */
+/* ---------- F3: menor costo (Dijkstra) ---------- */
 const limpiarAnimacion = () => { $("#resultado").hidden = true; est = {visit: {}, camino: [], malos: {}, fin: 0}; };
 const listaRuta = ids => { const ol = el("ol", null, "ruta"); ids.forEach(id => ol.appendChild(el("li", nombre(id)))); return ol; };
 function trazaDijkstra(c, traza, titulo) {
@@ -354,6 +353,7 @@ $("#btn-mejor").addEventListener("click", async () => {
     mostrarMejorBase(r);
   } catch (e) { mensaje(e.message, "error"); limpiarAnimacion(); }
 });
+$("#form-cobertura").addEventListener("submit", async ev => {
   ev.preventDefault(); const f = ev.target, origen = f.origen.value.trim().toUpperCase(), zona = f.zona.value.trim().toUpperCase();
   try {
     const r = zona ? await llamarApi("GET", `/api/cobertura?origen=${encodeURIComponent(origen)}&zona=${encodeURIComponent(zona)}`)
