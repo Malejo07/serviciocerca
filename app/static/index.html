@@ -1,201 +1,331 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ServicioCerca — Red de cobertura</title>
-  <style>
-    body { font-family: system-ui, sans-serif; margin: 0 auto; max-width: 1100px; padding: 16px; background: #f6f7f9; color: #222; }
-    h1 { margin-bottom: 4px; }
-    .subtitulo { color: #666; margin-top: 0; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
-    .tarjeta { background: #fff; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
-    .tarjeta h2 { margin-top: 0; font-size: 1.1rem; }
-    label { display: block; font-size: .85rem; margin-top: 8px; }
-    input, select { width: 100%; padding: 6px; box-sizing: border-box; }
-    input[type=checkbox] { width: auto; }
-    button { margin-top: 12px; padding: 8px 14px; border: 0; border-radius: 6px; background: #2563eb; color: #fff; cursor: pointer; }
-    button.secundario { background: #6b7280; }
-    #mensaje { margin: 16px 0; padding: 10px; border-radius: 6px; display: none; }
-    #mensaje.ok { display: block; background: #dcfce7; color: #166534; }
-    #mensaje.error { display: block; background: #fee2e2; color: #991b1b; }
-    table { width: 100%; border-collapse: collapse; font-size: .9rem; }
-    th, td { text-align: left; padding: 6px; border-bottom: 1px solid #e5e7eb; }
-    .acciones { margin: 16px 0; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ServicioCerca — Centro de cobertura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#050A14;--panel:#0B1424;--panel2:#101C31;--line:#1B2B45;--txt:#D7E3F4;--mut:#8A9AB5;--base:#35E0FF;--zona:#9AA8FF;--ruta:#FFC857;--mal:#FF5D73}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ink);color:var(--txt);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif}
+h1,h2,h3{font-family:"Space Grotesk",system-ui,sans-serif;margin:0;font-weight:700}
+header{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:16px 28px;border-bottom:1px solid var(--line)}
+.marca{display:flex;align-items:center;gap:12px}
+.marca h1{font-size:1.35rem}.marca p{margin:0;color:var(--mut);font-size:.85rem}
+.kpis{display:flex;gap:22px}
+.k{text-align:right}.k b{display:block;font:700 1.4rem "Space Grotesk",sans-serif;color:var(--base);font-variant-numeric:tabular-nums}
+.k span{color:var(--mut);font-size:.78rem}
+.centro{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:20px;padding:20px 28px}
+.mapa{position:relative;min-height:540px;border:1px solid var(--line);border-radius:14px;overflow:hidden;
+ background:radial-gradient(ellipse at 50% 40%,#0E2038 0,#060D1A 70%);}
+.mapa::before{content:"";position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:44px 44px;opacity:.35}
+.mapa::after{content:"";position:absolute;left:0;right:0;height:120px;top:-120px;background:linear-gradient(transparent,rgba(53,224,255,.07),transparent);animation:barrido 7s linear infinite}
+@keyframes barrido{to{transform:translateY(760px)}}
+canvas{position:absolute;inset:0;width:100%;height:100%;z-index:1}
+.leyenda{position:absolute;left:16px;bottom:14px;z-index:2;display:flex;gap:16px;font-size:.8rem;color:var(--mut)}
+.leyenda i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+canvas{touch-action:none}.leyenda{flex-wrap:wrap;right:70px;gap:4px 16px}
+.zoom{position:absolute;right:14px;top:14px;z-index:2;display:flex;flex-direction:column;gap:6px}
+.zoom button{margin:0;width:36px;height:36px;padding:0;font-size:1.15rem;background:var(--panel2);color:var(--txt);border:1px solid var(--line)}
+#tip{position:absolute;z-index:3;pointer-events:none;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:.82rem;display:none}
+.lateral{display:flex;flex-direction:column;gap:16px}
+.tarjeta{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+.tarjeta h2{font-size:1.05rem;margin-bottom:4px}
+.ayuda{color:var(--mut);font-size:.83rem;margin:0 0 10px}
+label{display:block;font-size:.82rem;color:var(--mut);margin-top:10px}
+input,select{width:100%;margin-top:4px;padding:9px 10px;background:var(--ink);color:var(--txt);border:1px solid var(--line);border-radius:8px;font:inherit}
+input[type=checkbox]{width:auto;margin-right:8px}
+button{margin-top:14px;padding:9px 16px;border:0;border-radius:8px;background:var(--base);color:#04121C;font:500 .9rem "IBM Plex Sans",sans-serif;cursor:pointer}
+button.sec{background:transparent;color:var(--txt);border:1px solid var(--line)}
+button:hover{filter:brightness(1.12)}
+:focus-visible{outline:2px solid var(--ruta);outline-offset:2px}
+.res{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:.9rem}
+.res .t{font-weight:500}.res .t.ok{color:var(--ruta)}.res .t.mal{color:var(--mal)}
+.ruta,.chips{list-style:none;display:flex;flex-wrap:wrap;gap:6px;padding:0;margin:10px 0}
+.ruta li,.chip{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.8rem}
+.ruta li+li::before{content:"›";margin-right:6px;color:var(--ruta)}
+.chip.mal{border-color:var(--mal);color:var(--mal)}.chip.ok{border-color:var(--base);color:var(--base)}
+details{margin-top:10px}summary{cursor:pointer;color:var(--mut);font-size:.85rem}
+.adm{padding:0 28px 28px}.adm>summary{font:700 1.05rem "Space Grotesk",sans-serif;color:var(--txt);margin-bottom:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-bottom:16px}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}th{color:var(--mut);font-weight:500}
+#mensaje{position:fixed;right:20px;bottom:20px;z-index:9;max-width:360px;padding:12px 16px;border-radius:10px;display:none;background:var(--panel2);border:1px solid var(--line)}
+#mensaje.ok{display:block;border-color:var(--base)}#mensaje.error{display:block;border-color:var(--mal);color:#FFC2CB}
+@media(max-width:900px){.centro{grid-template-columns:1fr;padding:16px}header,.adm{padding-left:16px;padding-right:16px}.mapa{min-height:420px}}
+@media(prefers-reduced-motion:reduce){.mapa::after{animation:none;display:none}}
+</style>
 </head>
 <body>
-  <h1>ServicioCerca</h1>
-  <p class="subtitulo">Red de cobertura: bases, zonas, técnicos y trayectos (tiempo en minutos).</p>
-
-  <div class="acciones">
-    <button onclick="cargarEjemplo()">Cargar red de ejemplo</button>
-    <button class="secundario" onclick="vaciarRed()">Vaciar red</button>
+<header>
+  <div class="marca">
+    <svg width="38" height="38" viewBox="0 0 38 38" aria-hidden="true"><g stroke="#35E0FF" stroke-width="1.5" fill="none"><path d="M19 6 30 12.5v13L19 32 8 25.5v-13Z"/><path d="M19 6v26M8 12.5l22 13M30 12.5 8 25.5" opacity=".4"/></g><circle cx="19" cy="19" r="3.5" fill="#FFC857"/></svg>
+    <div><h1>ServicioCerca</h1><p>Sepa en segundos qué zonas puede atender cada base.</p></div>
   </div>
+  <div class="kpis" aria-label="Resumen de la red">
+    <div class="k"><b id="k-bases">0</b><span>bases</span></div>
+    <div class="k"><b id="k-zonas">0</b><span>zonas</span></div>
+    <div class="k"><b id="k-tec">0</b><span>técnicos disponibles</span></div>
+    <div class="k"><b id="k-tray">0</b><span>trayectos</span></div>
+  </div>
+</header>
 
-  <div id="mensaje"></div>
+<main class="centro">
+  <section class="mapa" aria-label="Mapa de la red de cobertura">
+    <canvas id="cv" role="img" aria-label="Grafo animado de bases y zonas"></canvas>
+    <div id="tip"></div>
+    <div class="zoom"><button id="z-mas" aria-label="Ampliar">+</button><button id="z-menos" aria-label="Reducir">−</button><button id="z-ini" aria-label="Restablecer vista">⟲</button></div>
+    <div class="leyenda"><span><i style="background:var(--base)"></i>Base</span><span><i style="background:var(--zona)"></i>Zona</span><span><i style="background:var(--ruta)"></i>Ruta</span><span><i style="background:var(--mal)"></i>Sin cobertura</span><span>Flecha: un sentido · dos carriles: ambos sentidos</span><span>Rueda: zoom · arrastre: mover</span></div>
+  </section>
 
+  <aside class="lateral">
+    <form class="tarjeta" id="form-cobertura">
+      <h2>Consultar cobertura</h2>
+      <p class="ayuda">Haga clic en el mapa para elegir una base de origen o una zona.</p>
+      <label>Origen <input id="q-origen" name="origen" required placeholder="B1"></label>
+      <label>Zona solicitada <input id="q-zona" name="zona" placeholder="Z5 (vacío: ver todo el alcance)"></label>
+      <button type="submit">Consultar</button>
+      <div id="resultado" class="res" hidden></div>
+    </form>
+    <div class="tarjeta">
+      <h2>Datos de práctica</h2>
+      <p class="ayuda">Cargue una red de ejemplo para explorar el mapa.</p>
+      <button type="button" onclick="cargarEjemplo()">Cargar red de ejemplo</button>
+      <button type="button" class="sec" onclick="vaciarRed()">Vaciar red</button>
+    </div>
+  </aside>
+</main>
+
+<details class="adm" open>
+  <summary>Administrar la red</summary>
   <div class="grid">
-    <form class="tarjeta" id="form-nodo">
-      <h2>Registrar nodo</h2>
+    <form class="tarjeta" id="form-nodo"><h2>Registrar nodo</h2>
       <label>ID <input name="id" required placeholder="Z1"></label>
       <label>Nombre <input name="nombre" required placeholder="Laureles"></label>
-      <label>Tipo
-        <select name="tipo"><option value="ZONA">Zona</option><option value="BASE">Base</option></select>
-      </label>
-      <button type="submit">Guardar nodo</button>
-    </form>
-
-    <form class="tarjeta" id="form-tecnico">
-      <h2>Registrar técnico</h2>
+      <label>Tipo <select name="tipo"><option value="ZONA">Zona</option><option value="BASE">Base</option></select></label>
+      <button type="submit">Guardar nodo</button></form>
+    <form class="tarjeta" id="form-tecnico"><h2>Registrar técnico</h2>
       <label>ID <input name="id" required placeholder="T1"></label>
       <label>Nombre <input name="nombre" required placeholder="Ana"></label>
       <label>Base <input name="base_id" required placeholder="B1"></label>
-      <label><input type="checkbox" name="disponible" checked> Disponible</label>
-      <button type="submit">Guardar técnico</button>
-    </form>
-
-    <form class="tarjeta" id="form-trayecto">
-      <h2>Registrar trayecto</h2>
+      <label><input type="checkbox" name="disponible" checked>Disponible</label>
+      <button type="submit">Guardar técnico</button></form>
+    <form class="tarjeta" id="form-trayecto"><h2>Registrar trayecto</h2>
       <label>Origen <input name="origen" required placeholder="B1"></label>
       <label>Destino <input name="destino" required placeholder="Z1"></label>
       <label>Minutos <input name="minutos" required type="number" step="any" placeholder="10"></label>
-      <label><input type="checkbox" name="bidireccional" checked> Se recorre en ambos sentidos</label>
-      <button type="submit">Guardar trayecto</button>
-    </form>
+      <label><input type="checkbox" name="bidireccional" checked>Se recorre en ambos sentidos</label>
+      <button type="submit">Guardar trayecto</button></form>
   </div>
-
-  <div class="grid" style="margin-top:16px">
+  <div class="grid">
     <div class="tarjeta"><h2>Nodos</h2><table id="tabla-nodos"></table></div>
     <div class="tarjeta"><h2>Técnicos</h2><table id="tabla-tecnicos"></table></div>
     <div class="tarjeta"><h2>Trayectos</h2><table id="tabla-trayectos"></table></div>
   </div>
+</details>
+<div id="mensaje" role="status"></div>
 
-  <!-- F2: consulta de cobertura -->
-  <form class="tarjeta" id="form-cobertura" style="margin-top:16px">
-    <h2>Consultar cobertura (BFS)</h2>
-    <label>Origen (base o zona) <input name="origen" required placeholder="B1"></label>
-    <label>Zona solicitada (vacío = listar todo el alcance de la base)
-    <input name="zona" placeholder="Z5">
-    </label>
-    <button type="submit">Consultar</button>
-    <div id="resultado-cobertura" style="margin-top:12px"></div>
-    <h3>Traza del BFS</h3>
-    <table id="tabla-traza"></table>
-  </form>
+<script>
+const $ = s => document.querySelector(s);
+const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let red = {nodos: [], tecnicos: [], trayectos: []}, G = {n: {}, e: []}, est = {visit: {}, camino: [], malos: {}, fin: 0}, S = {}, hov = null, vista = {k: 1, x: 0, y: 0};
 
-  <script>
-    // Muestra un mensaje de éxito o de error devuelto por la API.
-    function mostrarMensaje(texto, tipo) {
-      const caja = document.getElementById("mensaje");
-      caja.textContent = texto;
-      caja.className = tipo;
+function mensaje(t, tipo) {
+  const c = $("#mensaje"); c.textContent = t; c.className = tipo;
+  clearTimeout(mensaje.h); mensaje.h = setTimeout(() => c.className = "", 6000);
+}
+async function llamarApi(m, u, b) {
+  const o = {method: m, headers: {"Content-Type": "application/json"}};
+  if (b) o.body = JSON.stringify(b);
+  const r = await fetch(u, o), d = await r.json();
+  if (!r.ok) throw new Error(d.error + (d.detalles ? " " + d.detalles.join("; ") : ""));
+  return d;
+}
+function llenarTabla(id, enc, filas) {
+  const t = $("#" + id); t.innerHTML = "";
+  const h = t.insertRow(); enc.forEach(e => { const th = document.createElement("th"); th.textContent = e; h.appendChild(th); });
+  filas.forEach(f => { const tr = t.insertRow(); f.forEach(v => tr.insertCell().textContent = v); });
+}
+function el(tag, texto, clase) { const e = document.createElement(tag); if (texto != null) e.textContent = texto; if (clase) e.className = clase; return e; }
+
+/* ---------- Disposición del grafo (fuerzas: nodos se repelen, trayectos atraen) ---------- */
+function disponer() {
+  const N = red.nodos, n = N.length; G.n = {};
+  N.forEach((d, i) => { const a = i / n * 6.2832; G.n[d.id] = {d, x: Math.cos(a), y: Math.sin(a) * .8, vx: 0, vy: 0, h: i * 1.7}; });
+  G.e = red.trayectos.filter(e => G.n[e.origen] && G.n[e.destino]);
+  const P = Object.values(G.n); if (!P.length) return;
+  for (let k = 0; k < 400; k++) {
+    for (let i = 0; i < P.length; i++) for (let j = i + 1; j < P.length; j++) {
+      const a = P[i], b = P[j], dx = a.x - b.x, dy = a.y - b.y, f = .05 / (dx * dx + dy * dy + .02);
+      a.vx += dx * f; a.vy += dy * f; b.vx -= dx * f; b.vy -= dy * f;
     }
+    G.e.forEach(e => { const a = G.n[e.origen], b = G.n[e.destino], ex = b.x - a.x, ey = b.y - a.y, L = Math.hypot(ex, ey) || .01, q = (L - .9) * .02 / L, dx = ex * q, dy = ey * q;
+      a.vx += dx; a.vy += dy; b.vx -= dx; b.vy -= dy; });
+    P.forEach(p => { p.x += p.vx; p.y += p.vy; p.vx *= .8; p.vy *= .8; });
+  }
+  const xs = P.map(p => p.x), ys = P.map(p => p.y), x0 = Math.min(...xs), y0 = Math.min(...ys);
+  const w = (Math.max(...xs) - x0) || 1, h = (Math.max(...ys) - y0) || 1;
+  P.forEach(p => { p.x = (p.x - x0) / w; p.y = (p.y - y0) / h; });
+  const sep = Math.min(.2, .9 / Math.sqrt(P.length));
+  for (let k = 0; k < 80; k++) for (let i = 0; i < P.length; i++) for (let j = i + 1; j < P.length; j++) {
+    const a = P[i], b = P[j], dx = a.x - b.x, dy = a.y - b.y, d = Math.hypot(dx, dy) || .001;
+    if (d < sep) { const m = (sep - d) / 2 / d; a.x += dx * m; a.y += dy * m; b.x -= dx * m; b.y -= dy * m; }
+  }
+  P.forEach(p => { p.x = Math.min(1, Math.max(0, p.x)); p.y = Math.min(1, Math.max(0, p.y)); });
+}
 
-    // Llama a la API y lanza un error con el mensaje legible si falla.
-    async function llamarApi(metodo, url, cuerpo) {
-      const opciones = { method: metodo, headers: { "Content-Type": "application/json" } };
-      if (cuerpo) opciones.body = JSON.stringify(cuerpo);
-      const respuesta = await fetch(url, opciones);
-      const datos = await respuesta.json();
-      if (!respuesta.ok) {
-        const detalles = datos.detalles ? " " + datos.detalles.join("; ") : "";
-        throw new Error(datos.error + detalles);
-      }
-      return datos;
-    }
+/* ---------- Dibujo animado ---------- */
+const cv = $("#cv"), cx = cv.getContext("2d");
+let dpr = 1;
+new ResizeObserver(() => { dpr = devicePixelRatio || 1; cv.width = cv.clientWidth * dpr; cv.height = cv.clientHeight * dpr; }).observe(cv);
 
-    // Llena una tabla usando textContent (evita inyectar HTML con datos del usuario).
-    function llenarTabla(idTabla, encabezados, filas) {
-      const tabla = document.getElementById(idTabla);
-      tabla.innerHTML = "";
-      const trEnc = tabla.insertRow();
-      encabezados.forEach(h => { const th = document.createElement("th"); th.textContent = h; trEnc.appendChild(th); });
-      filas.forEach(fila => {
-        const tr = tabla.insertRow();
-        fila.forEach(valor => { tr.insertCell().textContent = valor; });
-      });
-    }
+function hexagono(x, y, r) {
+  cx.beginPath();
+  for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3 + Math.PI / 6; cx.lineTo(x + r * Math.cos(a), y + r * Math.sin(a)); }
+  cx.closePath();
+}
+function dibujar(ms) {
+  const t = ms / 1000, W = cv.clientWidth, H = cv.clientHeight, m = 56, amp = RM ? 0 : 4;
+  cx.setTransform(dpr, 0, 0, dpr, 0, 0); cx.clearRect(0, 0, W, H);
+  cx.setTransform(dpr * vista.k, 0, 0, dpr * vista.k, vista.x * dpr, vista.y * dpr);
+  S = {};
+  for (const k in G.n) { const p = G.n[k]; S[k] = [m + p.x * (W - 2 * m) + Math.sin(t * .7 + p.h) * amp, m + p.y * (H - 2 * m - 24) + Math.cos(t * .6 + p.h) * amp]; }
+  const listo = est.fin && t >= est.fin, cam = listo ? est.camino : [];
+  cx.textAlign = "center";
+  if (!red.nodos.length) { cx.fillStyle = "#8A9AB5"; cx.font = '15px "IBM Plex Sans",sans-serif'; cx.fillText("La red está vacía. Cargue la red de ejemplo o registre un nodo.", W / 2, H / 2); }
 
-    async function refrescar() {
-      const red = await llamarApi("GET", "/api/red");
-      llenarTabla("tabla-nodos", ["ID", "Nombre", "Tipo"], red.nodos.map(n => [n.id, n.nombre, n.tipo]));
-      llenarTabla("tabla-tecnicos", ["ID", "Nombre", "Base", "Disponible"],
-        red.tecnicos.map(t => [t.id, t.nombre, t.base_id, t.disponible ? "Sí" : "No"]));
-      llenarTabla("tabla-trayectos", ["Origen", "Destino", "Minutos"],
-        red.trayectos.map(t => [t.origen, t.destino, t.minutos]));
-    }
-
-    // Conecta un formulario con un endpoint POST.
-    function conectarFormulario(idForm, url, convertir) {
-      document.getElementById(idForm).addEventListener("submit", async (evento) => {
-        evento.preventDefault();
-        const form = evento.target;
-        try {
-          await llamarApi("POST", url, convertir(form));
-          mostrarMensaje("Registrado correctamente.", "ok");
-          form.reset();
-          await refrescar();
-        } catch (error) {
-          mostrarMensaje(error.message, "error");
-        }
-      });
-    }
-
-    conectarFormulario("form-nodo", "/api/nodos", f => ({
-      id: f.id.value, nombre: f.nombre.value, tipo: f.tipo.value
-    }));
-    conectarFormulario("form-tecnico", "/api/tecnicos", f => ({
-      id: f.id.value, nombre: f.nombre.value, base_id: f.base_id.value, disponible: f.disponible.checked
-    }));
-    conectarFormulario("form-trayecto", "/api/trayectos", f => ({
-      origen: f.origen.value, destino: f.destino.value,
-      minutos: Number(f.minutos.value), bidireccional: f.bidireccional.checked
-    }));
-
-    async function cargarEjemplo() {
-      const r = await llamarApi("POST", "/api/red/ejemplo");
-      mostrarMensaje(r.mensaje, "ok");
-      await refrescar();
-    }
-
-    async function vaciarRed() {
-      const r = await llamarApi("DELETE", "/api/red");
-      mostrarMensaje(r.mensaje, "ok");
-      await refrescar();
-    }
-
-    refrescar();
-
-    // F2: consulta de cobertura. Si no hay zona, lista el alcance de la base.
-    document.getElementById("form-cobertura").addEventListener("submit", async (evento) => {
-      evento.preventDefault();
-      const f = evento.target;
-      const origen = f.origen.value.trim();
-      const zona = f.zona.value.trim();
-      const caja = document.getElementById("resultado-cobertura");
-      caja.textContent = "";
-      try {
-        let r;
-        if (zona) {
-          r = await llamarApi("GET", `/api/cobertura?origen=${encodeURIComponent(origen)}&zona=${encodeURIComponent(zona)}`);
-          mostrarMensaje(r.mensaje, r.cubierta ? "ok" : "error");
-          if (r.cubierta) caja.textContent = "Camino: " + r.camino.join(" → ") + ` (${r.tramos} tramo(s))`;
-        } else {
-          r = await llamarApi("GET", `/api/cobertura/alcance/${encodeURIComponent(origen)}`);
-          mostrarMensaje(r.mensaje, "ok");
-          const zonas = r.zonas_alcanzables.map(z => `${z.id} ${z.nombre} (${z.tramos})`).join(", ") || "ninguna";
-          const tecnicos = r.tecnicos_disponibles.map(t => t.nombre).join(", ") || "ninguno";
-          caja.textContent = `Alcanzables: ${zonas}. No alcanzables: ${r.zonas_no_alcanzables.join(", ") || "ninguna"}. ` +
-                             `Técnicos disponibles: ${tecnicos}.`;
-        }
-        llenarTabla("tabla-traza", ["Paso", "Se saca", "Vecinos", "Nuevos", "Cola"],
-          r.traza.map(p => [p.paso, p.actual ?? "inicio", p.vecinos.join(", "), p.nuevos.join(", "), p.cola.join(", ")]));
-      } catch (error) {
-        mostrarMensaje(error.message, "error");
-        llenarTabla("tabla-traza", [], []);
+  G.e.forEach((e, ei) => {
+    const [ax, ay] = S[e.origen], [bx, by] = S[e.destino], len = Math.hypot(bx - ax, by - ay) || 1;
+    const nx = -(by - ay) / len, ny = (bx - ax) / len, off = e.bidireccional ? 6 : 0;
+    const usa = (f, g) => cam.some((id, i) => i && cam[i - 1] == f && id == g);
+    const carriles = [[e.origen, e.destino, 1, "#35E0FF"]];
+    if (e.bidireccional) carriles.push([e.destino, e.origen, -1, "#9AA8FF"]);
+    carriles.forEach(([f, g, sg, col]) => {
+      const [x1, y1] = S[f], [x2, y2] = S[g], dx = (x2 - x1) / len, dy = (y2 - y1) / len;
+      const ox = nx * off * sg, oy = ny * off * sg, ruta = usa(f, g), c = ruta ? "#FFC857" : col;
+      cx.strokeStyle = ruta ? c : "rgba(120,160,220,.28)"; cx.lineWidth = ruta ? 2.5 : 1;
+      cx.beginPath(); cx.moveTo(x1 + ox, y1 + oy); cx.lineTo(x2 + ox, y2 + oy); cx.stroke();
+      const fx = x2 + ox - dx * 26, fy = y2 + oy - dy * 26;
+      cx.fillStyle = c; cx.beginPath(); cx.moveTo(fx + dx * 7, fy + dy * 7);
+      cx.lineTo(fx - dx * 3 - dy * 4, fy - dy * 3 + dx * 4); cx.lineTo(fx - dx * 3 + dy * 4, fy - dy * 3 - dx * 4); cx.closePath(); cx.fill();
+      if (RM) return;
+      for (let k = 0; k < 2; k++) {
+        const u = (t * (ruta ? .5 : .16) + k / 2 + ei * .13) % 1;
+        cx.fillStyle = c; cx.globalAlpha = ruta ? 1 : .85;
+        cx.beginPath(); cx.arc(x1 + ox + (x2 - x1) * u, y1 + oy + (y2 - y1) * u, ruta ? 3 : 2.2, 0, 6.2832); cx.fill(); cx.globalAlpha = 1;
       }
     });
-  </script>
+    if (W > 520) { cx.fillStyle = "#8A9AB5"; cx.font = '11px "IBM Plex Sans",sans-serif';
+      cx.fillText(e.minutos + " min", (ax + bx) / 2 + nx * (off ? 18 : 0), (ay + by) / 2 + ny * (off ? 18 : 0) - (off ? 0 : 5)); }
+  });
+
+  for (const k in G.n) {
+    const d = G.n[k].d, [x, y] = S[k], base = d.tipo === "BASE", r = base ? 13 : 9;
+    const v = est.visit[k], lit = v !== undefined && t >= v, mal = listo && est.malos[k];
+    const dim = est.fin && !lit && !mal;
+    const col = mal ? "#FF5D73" : base ? "#35E0FF" : "#9AA8FF";
+    cx.globalAlpha = dim ? .3 : 1;
+    if (lit && t - v < 1.3) { cx.strokeStyle = col; cx.globalAlpha = 1 - (t - v) / 1.3; cx.lineWidth = 2; cx.beginPath(); cx.arc(x, y, r + (t - v) * 30, 0, 6.2832); cx.stroke(); cx.globalAlpha = 1; }
+    if (mal) { cx.strokeStyle = col; cx.globalAlpha = .5 + .5 * Math.sin(t * 5); cx.beginPath(); cx.arc(x, y, r + 8, 0, 6.2832); cx.stroke(); cx.globalAlpha = 1; }
+    cx.shadowColor = col; cx.shadowBlur = (lit || hov === k) ? 22 : 8;
+    cx.fillStyle = "#06101E"; cx.strokeStyle = col; cx.lineWidth = hov === k ? 3 : 2;
+    if (base) hexagono(x, y, r); else { cx.beginPath(); cx.arc(x, y, r, 0, 6.2832); }
+    cx.fill(); cx.stroke(); cx.shadowBlur = 0;
+    cx.fillStyle = col; cx.beginPath(); cx.arc(x, y, base ? 4 : 3, 0, 6.2832); cx.fill();
+    cx.fillStyle = "#D7E3F4"; cx.font = '12px "IBM Plex Sans",sans-serif'; cx.fillText(d.nombre, x, y + r + 16);
+    cx.globalAlpha = 1;
+  }
+  requestAnimationFrame(dibujar);
+}
+requestAnimationFrame(dibujar);
+
+/* Interacción: zoom (rueda y botones), arrastre para mover, información al pasar y clic para elegir */
+function aMundo(ev) { const b = cv.getBoundingClientRect(); return [(ev.clientX - b.left - vista.x) / vista.k, (ev.clientY - b.top - vista.y) / vista.k]; }
+function nodoCerca(ev) { const [x, y] = aMundo(ev); return Object.keys(S).find(k => Math.hypot(S[k][0] - x, S[k][1] - y) < 18) || null; }
+function zoom(f, px, py) {
+  const k = Math.min(4, Math.max(.4, vista.k * f)), r = k / vista.k;
+  px = px ?? cv.clientWidth / 2; py = py ?? cv.clientHeight / 2;
+  vista.x = px - (px - vista.x) * r; vista.y = py - (py - vista.y) * r; vista.k = k;
+}
+$("#z-mas").onclick = () => zoom(1.25); $("#z-menos").onclick = () => zoom(.8); $("#z-ini").onclick = () => { vista = {k: 1, x: 0, y: 0}; };
+cv.addEventListener("wheel", ev => { ev.preventDefault(); const b = cv.getBoundingClientRect(); zoom(ev.deltaY < 0 ? 1.15 : .87, ev.clientX - b.left, ev.clientY - b.top); }, {passive: false});
+let arr = null;
+cv.addEventListener("pointerdown", ev => { arr = {x: ev.clientX, y: ev.clientY, vx: vista.x, vy: vista.y, mov: false}; cv.setPointerCapture(ev.pointerId); });
+cv.addEventListener("pointermove", ev => {
+  const tip = $("#tip");
+  if (arr) { const dx = ev.clientX - arr.x, dy = ev.clientY - arr.y; if (Math.hypot(dx, dy) > 4) arr.mov = true;
+    if (arr.mov) { vista.x = arr.vx + dx; vista.y = arr.vy + dy; tip.style.display = "none"; cv.style.cursor = "grabbing"; return; } }
+  hov = nodoCerca(ev); cv.style.cursor = hov ? "pointer" : "grab";
+  if (!hov) { tip.style.display = "none"; return; }
+  const d = G.n[hov].d, tec = red.tecnicos.filter(t => t.base_id === d.id && t.disponible).length;
+  tip.textContent = `${d.nombre} (${d.id}) · ${d.tipo === "BASE" ? "Base · " + tec + " técnico(s) disponible(s)" : "Zona"}`;
+  const b = cv.getBoundingClientRect();
+  tip.style.display = "block"; tip.style.left = Math.min(ev.clientX - b.left + 14, b.width - 240) + "px"; tip.style.top = (ev.clientY - b.top + 14) + "px";
+});
+cv.addEventListener("pointerup", ev => { if (arr && !arr.mov) { const k = nodoCerca(ev); if (k) $(G.n[k].d.tipo === "BASE" ? "#q-origen" : "#q-zona").value = k; } arr = null; });
+cv.addEventListener("pointerleave", () => { hov = null; $("#tip").style.display = "none"; });
+
+/* ---------- Animación de la búsqueda (BFS) ---------- */
+function animar(r, zona) {
+  const t0 = performance.now() / 1000, dt = RM ? 0 : .5;
+  est = {visit: {}, camino: [], malos: {}, fin: t0 + r.traza.length * dt + .3};
+  r.traza.forEach((p, i) => [p.actual, ...p.nuevos].filter(Boolean).forEach(id => { if (!(id in est.visit)) est.visit[id] = t0 + i * dt; }));
+  if (zona) { if (r.cubierta) est.camino = r.camino; else est.malos[zona] = 1; }
+  else (r.zonas_no_alcanzables || []).forEach(id => est.malos[id] = 1);
+}
+function nombre(id) { return G.n[id] ? G.n[id].d.nombre : id; }
+function mostrarResultado(r, zona) {
+  const c = $("#resultado"); c.hidden = false; c.replaceChildren();
+  c.appendChild(el("div", r.mensaje, "t " + ((zona ? r.cubierta : true) ? "ok" : "mal")));
+  if (zona && r.cubierta) {
+    const ol = el("ol", null, "ruta"); r.camino.forEach(id => ol.appendChild(el("li", nombre(id)))); c.appendChild(ol);
+    c.appendChild(el("div", `${r.tramos} tramo(s)`, "ayuda"));
+  } else if (!zona) {
+    const ch = (arr, clase) => { const u = el("ul", null, "chips"); arr.forEach(x => u.appendChild(el("li", x, "chip " + clase))); return u; };
+    c.appendChild(el("div", "Alcanzables", "ayuda")); c.appendChild(ch(r.zonas_alcanzables.map(z => `${z.nombre} · ${z.tramos}`), "ok"));
+    if (r.zonas_no_alcanzables.length) { c.appendChild(el("div", "Sin cobertura", "ayuda")); c.appendChild(ch(r.zonas_no_alcanzables.map(nombre), "mal")); }
+    c.appendChild(el("div", "Técnicos disponibles", "ayuda")); c.appendChild(ch(r.tecnicos_disponibles.map(t => t.nombre).length ? r.tecnicos_disponibles.map(t => t.nombre) : ["ninguno"], ""));
+  }
+  const d = el("details"); d.appendChild(el("summary", "Ver paso a paso de la búsqueda"));
+  const tb = el("table"); tb.id = "tabla-traza"; d.appendChild(tb); c.appendChild(d);
+  llenarTabla("tabla-traza", ["Paso", "Se saca", "Nuevos", "Cola"], r.traza.map(p => [p.paso, p.actual ?? "inicio", p.nuevos.join(", "), p.cola.join(", ")]));
+}
+$("#form-cobertura").addEventListener("submit", async ev => {
+  ev.preventDefault(); const f = ev.target, origen = f.origen.value.trim().toUpperCase(), zona = f.zona.value.trim().toUpperCase();
+  try {
+    const r = zona ? await llamarApi("GET", `/api/cobertura?origen=${encodeURIComponent(origen)}&zona=${encodeURIComponent(zona)}`)
+                   : await llamarApi("GET", `/api/cobertura/alcance/${encodeURIComponent(origen)}`);
+    animar(r, zona); mostrarResultado(r, zona);
+  } catch (e) { mensaje(e.message, "error"); $("#resultado").hidden = true; est = {visit: {}, camino: [], malos: {}, fin: 0}; }
+});
+
+/* ---------- Datos y formularios (misma lógica de antes) ---------- */
+async function refrescar() {
+  red = await llamarApi("GET", "/api/red");
+  llenarTabla("tabla-nodos", ["ID", "Nombre", "Tipo"], red.nodos.map(n => [n.id, n.nombre, n.tipo]));
+  llenarTabla("tabla-tecnicos", ["ID", "Nombre", "Base", "Disponible"], red.tecnicos.map(t => [t.id, t.nombre, t.base_id, t.disponible ? "Sí" : "No"]));
+  llenarTabla("tabla-trayectos", ["Origen", "Destino", "Minutos"], red.trayectos.map(t => [t.origen, t.destino, t.minutos]));
+  $("#k-bases").textContent = red.nodos.filter(n => n.tipo === "BASE").length;
+  $("#k-zonas").textContent = red.nodos.filter(n => n.tipo === "ZONA").length;
+  $("#k-tec").textContent = red.tecnicos.filter(t => t.disponible).length;
+  $("#k-tray").textContent = red.trayectos.length;
+  est = {visit: {}, camino: [], malos: {}, fin: 0}; $("#resultado").hidden = true; disponer();
+}
+function conectar(id, url, convertir) {
+  $("#" + id).addEventListener("submit", async ev => {
+    ev.preventDefault(); const f = ev.target;
+    try { await llamarApi("POST", url, convertir(f)); mensaje("Registrado correctamente.", "ok"); f.reset(); await refrescar(); }
+    catch (e) { mensaje(e.message, "error"); }
+  });
+}
+conectar("form-nodo", "/api/nodos", f => ({id: f.id.value, nombre: f.nombre.value, tipo: f.tipo.value}));
+conectar("form-tecnico", "/api/tecnicos", f => ({id: f.id.value, nombre: f.nombre.value, base_id: f.base_id.value, disponible: f.disponible.checked}));
+conectar("form-trayecto", "/api/trayectos", f => ({origen: f.origen.value, destino: f.destino.value, minutos: Number(f.minutos.value), bidireccional: f.bidireccional.checked}));
+async function cargarEjemplo() { const r = await llamarApi("POST", "/api/red/ejemplo"); mensaje(r.mensaje, "ok"); await refrescar(); }
+async function vaciarRed() { const r = await llamarApi("DELETE", "/api/red"); mensaje(r.mensaje, "ok"); await refrescar(); }
+refrescar();
+</script>
 </body>
 </html>
