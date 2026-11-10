@@ -77,7 +77,7 @@ def consultar_cobertura(red: RedCobertura, origen, zona) -> dict:
                    f"en {tramos} tramo(s): {' -> '.join(camino)}.")
     else:
         tramos = None
-        if not _tiene_trayectos_de_llegada(red, nodo_zona.id):
+        if not tiene_trayectos_de_llegada(red, nodo_zona.id):
             mensaje = (f"{nodo_zona.id} ({nodo_zona.nombre}) no tiene trayectos que lleguen a ella; "
                        f"no se puede atender desde ninguna base.")
         else:
@@ -124,5 +124,5 @@ def listar_alcance(red: RedCobertura, base_id) -> dict:
     }
 
 
-def _tiene_trayectos_de_llegada(red: RedCobertura, id_nodo: str) -> bool:
+def tiene_trayectos_de_llegada(red: RedCobertura, id_nodo: str) -> bool:
     return any(id_nodo in red.vecinos(otro) for otro in red.nodos if otro != id_nodo)
