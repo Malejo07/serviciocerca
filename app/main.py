@@ -6,8 +6,10 @@ from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse
 
+from app.dominio.asignacion import mejor_base
 from app.dominio.carga import red_de_ejemplo
 from app.dominio.cobertura import consultar_cobertura, listar_alcance
+from app.dominio.costo import menor_costo
 from app.dominio.errores import DatoInvalido, ElementoDuplicado, ElementoNoEncontrado, ErrorRed
 from app.dominio.red import RedCobertura
 from app.esquemas import NodoEntrada, RedSalida, TecnicoEntrada, TrayectoEntrada
@@ -87,6 +89,18 @@ def crear_app() -> FastAPI:
         """Zonas que se pueden alcanzar desde una base (BFS)."""
         return listar_alcance(red, base_id)
     
+    # ---------- F3: menor costo ----------
+
+    @app.get("/api/menor-costo")
+    def menor_costo_de_zona(origen: str, zona: str, red: RedCobertura = Depends(obtener_red)):
+        """Camino de menor tiempo total desde el origen hasta la zona (Dijkstra)."""
+        return menor_costo(red, origen, zona)
+
+    @app.get("/api/menor-costo/mejor-base")
+    def mejor_base_para_zona(zona: str, red: RedCobertura = Depends(obtener_red)):
+        """Base con técnicos disponibles que llega antes a la zona (Dijkstra desde cada base)."""
+        return mejor_base(red, zona)
+
     # ---------- Interfaz mínima ----------
 
     @app.get("/", include_in_schema=False)
