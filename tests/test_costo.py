@@ -162,3 +162,17 @@ def test_coincide_con_fuerza_bruta_en_redes_aleatorias():
                 assert r["alcanzable"] is False
             else:
                 assert r["costo"] == pytest.approx(esperado)
+
+
+def test_peso_invalido_en_ruta_de_menos_tramos_se_rechaza():
+    # Dijkstra llega a Z por B1->X->Y->Z (3 min) y se detiene sin revisar W->Z.
+    # La comparación con BFS (B1->W->Z) también debe validar ese tramo.
+    red = RedCobertura()
+    for i, tipo in (("B1", "BASE"), ("X", "ZONA"), ("Y", "ZONA"), ("W", "ZONA"), ("Z", "ZONA")):
+        red.agregar_nodo(i, i, tipo)
+    for a, b, m in (("B1", "X", 1), ("X", "Y", 1), ("Y", "Z", 1), ("B1", "W", 50), ("W", "Z", 1)):
+        red.agregar_trayecto(a, b, m, bidireccional=False)
+    red._adyacencia["W"]["Z"] = "10"  # alteración fuera de la API
+    with pytest.raises(DatoInvalido) as error:
+        menor_costo(red, "B1", "Z")
+    assert "W -> Z" in error.value.mensaje
