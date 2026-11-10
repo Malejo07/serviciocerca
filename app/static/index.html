@@ -297,6 +297,63 @@ function mostrarResultado(r, zona) {
   llenarTabla("tabla-traza", ["Paso", "Se saca", "Nuevos", "Cola"], r.traza.map(p => [p.paso, p.actual ?? "inicio", p.nuevos.join(", "), p.cola.join(", ")]));
 }
 $("#form-cobertura").addEventListener("submit", async ev => {
+  /* ---------- F3: menor costo (Dijkstra) ---------- */
+const limpiarAnimacion = () => { $("#resultado").hidden = true; est = {visit: {}, camino: [], malos: {}, fin: 0}; };
+const listaRuta = ids => { const ol = el("ol", null, "ruta"); ids.forEach(id => ol.appendChild(el("li", nombre(id)))); return ol; };
+function trazaDijkstra(c, traza, titulo) {
+  const d = el("details"); d.appendChild(el("summary", titulo));
+  const tb = el("table"); tb.id = "tabla-traza"; d.appendChild(tb); c.appendChild(d);
+  llenarTabla("tabla-traza", ["Paso", "Sale (costo)", "Costos candidatos", "Pendientes (costo)"], traza.map(p => [p.paso,
+    p.actual == null ? "inicio" : `${p.actual} (${p.costo_actual})`,
+    p.relajaciones.map(x => `${x.vecino}:${x.candidato}${x.mejora ? "✔" : "✘"}`).join(", "),
+    p.cola.map(x => `${x.id}:${x.costo}`).join(", ")]));
+}
+function mostrarCosto(r) {
+  const c = $("#resultado"); c.hidden = false; c.replaceChildren();
+  c.appendChild(el("div", r.mensaje, "t " + (r.alcanzable ? "ok" : "mal")));
+  if (r.alcanzable) {
+    c.appendChild(listaRuta(r.camino)); c.appendChild(el("div", `${r.costo} min · ${r.tramos} tramo(s)`, "ayuda"));
+    if (r.menos_tramos_es_mas_caro) {
+      c.appendChild(el("div", `Ruta con menos tramos, pero más lenta (${r.comparacion_bfs.costo} min)`, "ayuda"));
+      c.appendChild(listaRuta(r.comparacion_bfs.camino));
+    }
+  }
+  trazaDijkstra(c, r.traza, "Ver paso a paso del cálculo (Dijkstra)");
+}
+function mostrarMejorBase(r) {
+  const c = $("#resultado"); c.hidden = false; c.replaceChildren();
+  c.appendChild(el("div", r.mensaje, "t " + (r.mejor ? "ok" : "mal")));
+  if (r.mejor) { c.appendChild(listaRuta(r.mejor.camino)); c.appendChild(el("div", `${r.mejor.costo} min · ${r.mejor.tramos} tramo(s)`, "ayuda")); }
+  if (r.opciones.length) {
+    c.appendChild(el("div", "Comparación de bases", "ayuda"));
+    const u = el("ul", null, "chips");
+    r.opciones.forEach(o => {
+      const tec = o.tecnicos_disponibles.map(t => t.nombre).join(", ") || "sin técnicos disponibles";
+      const ok = o.alcanzable && o.tecnicos_disponibles.length;
+      u.appendChild(el("li", o.alcanzable ? `${o.base} · ${o.costo} min · ${tec}` : `${o.base} · no llega`, "chip " + (ok ? "ok" : "mal")));
+    });
+    c.appendChild(u);
+  }
+  if (r.mejor) trazaDijkstra(c, r.mejor.traza, `Ver paso a paso del cálculo desde ${r.mejor.base} (Dijkstra)`);
+}
+$("#btn-costo").addEventListener("click", async () => {
+  const f = $("#form-cobertura"), origen = f.origen.value.trim().toUpperCase(), zona = f.zona.value.trim().toUpperCase();
+  if (!origen || !zona) { mensaje("Indique el origen y la zona para calcular el menor costo.", "error"); return; }
+  try {
+    const r = await llamarApi("GET", `/api/menor-costo?origen=${encodeURIComponent(origen)}&zona=${encodeURIComponent(zona)}`);
+    animar({...r, cubierta: r.alcanzable}, zona); mostrarCosto(r);
+  } catch (e) { mensaje(e.message, "error"); limpiarAnimacion(); }
+});
+$("#btn-mejor").addEventListener("click", async () => {
+  const zona = $("#form-cobertura").zona.value.trim().toUpperCase();
+  if (!zona) { mensaje("Indique la zona para saber qué técnico llega primero.", "error"); return; }
+  try {
+    const r = await llamarApi("GET", `/api/menor-costo/mejor-base?zona=${encodeURIComponent(zona)}`);
+    if (r.mejor) { $("#form-cobertura").origen.value = r.mejor.base; animar({traza: r.mejor.traza, cubierta: true, camino: r.mejor.camino}, zona); }
+    else animar({traza: [], cubierta: false}, zona);
+    mostrarMejorBase(r);
+  } catch (e) { mensaje(e.message, "error"); limpiarAnimacion(); }
+});
   ev.preventDefault(); const f = ev.target, origen = f.origen.value.trim().toUpperCase(), zona = f.zona.value.trim().toUpperCase();
   try {
     const r = zona ? await llamarApi("GET", `/api/cobertura?origen=${encodeURIComponent(origen)}&zona=${encodeURIComponent(zona)}`)
