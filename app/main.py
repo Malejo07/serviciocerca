@@ -3,6 +3,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 import time
+from datetime import datetime, timezone
 
 from fastapi import Depends, FastAPI, Request, Response
 from fastapi.exceptions import RequestValidationError
@@ -10,13 +11,15 @@ from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Red
 from fastapi.staticfiles import StaticFiles
 
 from app.dominio.aceptacion import ejecutar_aceptacion, generar_reporte_markdown
-from app.dominio.asignacion import mejor_base
+from app.dominio.asignacion import (asignar_servicio, marcar_servicio, mejor_base, reportar_visita,
+                                    resumen_servicios)
 from app.dominio.carga import red_de_ejemplo
 from app.dominio.cobertura import consultar_cobertura, listar_alcance
 from app.dominio.costo import menor_costo
 from app.dominio.errores import CODIGOS_HTTP, ErrorRed
 from app.dominio.red import RedCobertura
-from app.esquemas import NodoEntrada, RedSalida, SesionEntrada, TecnicoEntrada, TrayectoEntrada
+from app.esquemas import (DisponibilidadEntrada, EstadoServicioEntrada, NodoEntrada, RedSalida, ReporteEntrada,
+                          ServicioEntrada, SesionEntrada, TecnicoEntrada, TrayectoEntrada)
 from app.seguridad import (DURACION_SESION, NOMBRE_COOKIE, ErrorAcceso, Seguridad, requiere, sesion_actual)
 
 CARPETA_STATIC = Path(__file__).resolve().parent / "static"
@@ -27,6 +30,9 @@ def crear_app(reloj=time.time, duracion_sesion: int = DURACION_SESION) -> FastAP
     app = FastAPI(title="ServicioCerca", description="Red de cobertura de técnicos")
     app.state.red = RedCobertura()  # la red vive en memoria (datos sintéticos)
     app.state.seguridad = Seguridad(reloj=reloj, duracion=duracion_sesion)
+
+    def ahora() -> str:
+        return datetime.fromtimestamp(reloj(), timezone.utc).isoformat(timespec="seconds")
 
     # ---------- Manejo de errores legible ----------
 
@@ -67,6 +73,11 @@ def crear_app(reloj=time.time, duracion_sesion: int = DURACION_SESION) -> FastAP
     def registrar_tecnico(datos: TecnicoEntrada, red: RedCobertura = Depends(obtener_red)):
         return asdict(red.agregar_tecnico(datos.id, datos.nombre, datos.base_id, datos.disponible))
 
+    @app.patch("/api/tecnicos/{id_tecnico}", dependencies=[Depends(requiere("configurar"))])
+    def cambiar_disponibilidad(id_tecnico: str, datos: DisponibilidadEntrada, red: RedCobertura = Depends(obtener_red)):
+        """Activa o desactiva a un técnico sin borrarlo."""
+        return asdict(red.cambiar_disponibilidad(id_tecnico, datos.disponible))
+
     @app.post("/api/trayectos", status_code=201, dependencies=[Depends(requiere("configurar"))])
     def registrar_trayecto(datos: TrayectoEntrada, red: RedCobertura = Depends(obtener_red)):
         creados = red.agregar_trayecto(datos.origen, datos.destino, datos.minutos, datos.bidireccional)
@@ -105,6 +116,40 @@ def crear_app(reloj=time.time, duracion_sesion: int = DURACION_SESION) -> FastAP
     def mejor_base_para_zona(zona: str, red: RedCobertura = Depends(obtener_red)):
         """Base con técnicos disponibles que llega antes a la zona (Dijkstra desde cada base)."""
         return mejor_base(red, zona)
+
+    # ---------- Servicios: asignación equitativa y seguimiento ----------
+
+    @app.post("/api/servicios", status_code=201, dependencies=[Depends(requiere("configurar"))])
+    def asignar(datos: ServicioEntrada, red: RedCobertura = Depends(obtener_red)):
+        """Asigna la zona al técnico que llega por la ruta más rápida, repartiendo la carga."""
+        return asignar_servicio(red, datos.zona, datos.tolerancia)
+
+    @app.get("/api/servicios")
+    def servicios(sesion: dict = Depends(requiere("consultar")), red: RedCobertura = Depends(obtener_red)):
+        """Resumen por técnico. Quien revisa ve todo; el técnico, solo sus propias rutas."""
+        if "revisar" in sesion["permisos"]:
+            return resumen_servicios(red)
+        return resumen_servicios(red, solo_tecnico=sesion.get("tecnico_id") or "")
+
+    @app.post("/api/servicios/{id_servicio}/reporte")
+    def reportar(id_servicio: str, datos: ReporteEntrada, sesion: dict = Depends(requiere("reportar")),
+                 red: RedCobertura = Depends(obtener_red)):
+        """El técnico reporta su visita (y la novedad, si la hubo) en un servicio suyo."""
+        novedad = datos.novedad
+        return reportar_visita(red, id_servicio, datos.texto, novedad.tipo if novedad else None,
+                               novedad.detalle if novedad else None, tecnico_id=sesion.get("tecnico_id") or "",
+                               fecha=ahora())
+
+    @app.patch("/api/servicios/{id_servicio}")
+    def estado_de_servicio(id_servicio: str, datos: EstadoServicioEntrada, sesion: dict = Depends(requiere("revisar")),
+                           red: RedCobertura = Depends(obtener_red)):
+        """Quien revisa decide si el servicio se cumplió, con una nota opcional, o lo reabre."""
+        return marcar_servicio(red, id_servicio, datos.estado, datos.nota, revisor=sesion["usuario"], fecha=ahora())
+
+    @app.delete("/api/servicios", dependencies=[Depends(requiere("administrar"))])
+    def reiniciar_servicios(red: RedCobertura = Depends(obtener_red)):
+        red.servicios.clear()
+        return {"mensaje": "Servicios reiniciados."}
 
     # ---------- F4: aceptación demostrable ----------
 

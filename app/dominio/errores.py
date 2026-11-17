@@ -21,9 +21,19 @@ class ElementoNoEncontrado(ErrorRed):
     """Se hace referencia a un elemento que no está registrado."""
 
 
+class ServicioAjeno(ErrorRed):
+    """El servicio pertenece a otro técnico."""
+
+
+class SinTecnicoDisponible(ErrorRed):
+    """La zona no se puede atender ahora: ninguna base alcanzable tiene técnicos disponibles."""
+
+
 # Código HTTP que la API devuelve para cada tipo de error (lo usan main.py y la aceptación de la F4).
 CODIGOS_HTTP = {
     DatoInvalido: 400,
     ElementoNoEncontrado: 404,
     ElementoDuplicado: 409,
+    SinTecnicoDisponible: 409,
+    ServicioAjeno: 403,
 }

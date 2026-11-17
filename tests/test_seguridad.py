@@ -112,15 +112,22 @@ RUTAS = {
     "nodo": ("post", "/api/nodos", {"id": "Z90", "nombre": "Nueva", "tipo": "ZONA"}),
     "tecnico": ("post", "/api/tecnicos", {"id": "T9", "nombre": "Nuevo", "base_id": "B1", "disponible": True}),
     "trayecto": ("post", "/api/trayectos", {"origen": "B2", "destino": "Z1", "minutos": 3, "bidireccional": True}),
+    "disponibilidad": ("patch", "/api/tecnicos/T3", {"disponible": True}),
+    "asignar": ("post", "/api/servicios", {"zona": "Z3"}),
+    "ver_servicios": ("get", "/api/servicios", None),
+    "marcar_servicio": ("patch", "/api/servicios/S1", {"estado": "CUMPLIDO"}),
+    "reportar_visita": ("post", "/api/servicios/S1/reporte", {"texto": "Visita realizada."}),
+    "reiniciar_servicios": ("delete", "/api/servicios", None),
     "ejemplo": ("post", "/api/red/ejemplo", None),
     "vaciar": ("delete", "/api/red", None),
     "aceptacion": ("get", "/api/aceptacion", None),
     "evidencia": ("get", "/api/aceptacion/evidencia", None),
 }
 PERMITIDAS = {
-    "tecnico": {"ver_red", "cobertura", "alcance", "menor_costo", "mejor_base"},
-    "configurador": {"ver_red", "cobertura", "alcance", "menor_costo", "mejor_base", "nodo", "tecnico", "trayecto", "ejemplo"},
-    "admin": set(RUTAS),
+    "tecnico": {"ver_red", "cobertura", "alcance", "menor_costo", "mejor_base", "ver_servicios", "reportar_visita"},
+    "configurador": {"ver_red", "cobertura", "alcance", "menor_costo", "mejor_base", "nodo", "tecnico", "trayecto", "ejemplo",
+                     "disponibilidad", "asignar", "ver_servicios", "marcar_servicio"},
+    "admin": set(RUTAS) - {"reportar_visita"},   # reportar visitas es del técnico
 }
 
 
@@ -141,6 +148,7 @@ def test_matriz_de_permisos(usuario, clave):
     app = crear_app()
     cliente = cliente_como(usuario, app)
     cliente_como("admin", app).post("/api/red/ejemplo")  # red cargada para que las rutas permitidas funcionen
+    cliente_como("admin", app).post("/api/servicios", json={"zona": "Z3"})  # existe el servicio S1
     r = peticion(cliente, clave)
     if clave in PERMITIDAS[usuario]:
         assert r.status_code < 300, r.text

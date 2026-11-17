@@ -21,6 +21,30 @@ class TecnicoEntrada(BaseModel):
     disponible: bool = True
 
 
+class DisponibilidadEntrada(BaseModel):
+    disponible: bool = Field(strict=True, description="true: puede recibir servicios; false: no")
+
+
+class ServicioEntrada(BaseModel):
+    zona: str = Field(examples=["Z3"])
+    tolerancia: float = Field(default=10, description="Minutos extra sobre el mejor tiempo que aún compiten por equidad")
+
+
+class EstadoServicioEntrada(BaseModel):
+    estado: str = Field(examples=["CUMPLIDO"], description="CUMPLIDO, NO_CUMPLIDO o ASIGNADO (reabrir)")
+    nota: str | None = Field(default=None, description="Comentario opcional de quien revisa")
+
+
+class NovedadEntrada(BaseModel):
+    tipo: str = Field(examples=["TRAFICO"], description="TRAFICO, CLIENTE_AUSENTE, ACCESO, EQUIPO u OTRO")
+    detalle: str = Field(examples=["Vía cerrada por obras en la carrera 50"])
+
+
+class ReporteEntrada(BaseModel):
+    texto: str = Field(examples=["Visita realizada, se atendió la zona sin problemas."])
+    novedad: NovedadEntrada | None = None
+
+
 class TrayectoEntrada(BaseModel):
     origen: str = Field(examples=["B1"])
     destino: str = Field(examples=["Z1"])
