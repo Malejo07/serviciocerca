@@ -203,7 +203,7 @@ def crear_app(reloj=time.time, duracion_sesion: int = DURACION_SESION) -> FastAP
 
     @app.get("/", include_in_schema=False)
     def inicio():
-        return RedirectResponse("/consola", status_code=303)   # la consola pide iniciar sesión
+        return FileResponse(CARPETA_STATIC / "landing.html")
 
     @app.get("/acceso", include_in_schema=False)
     def acceso(request: Request):

@@ -3,139 +3,409 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ServicioCerca — Centro de cobertura</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<title>Consola de operación · ServicioCerca</title>
+<link rel="stylesheet" href="/static/vendor/leaflet/leaflet.css">
 <style>
-:root{--ink:#050A14;--panel:#0B1424;--panel2:#101C31;--line:#1B2B45;--txt:#D7E3F4;--mut:#8A9AB5;--base:#35E0FF;--zona:#9AA8FF;--ruta:#FFC857;--mal:#FF5D73}
+@font-face{font-family:"Space Grotesk";font-weight:500;font-display:swap;src:url(/static/fonts/space-grotesk-500.woff2) format("woff2")}
+@font-face{font-family:"Space Grotesk";font-weight:700;font-display:swap;src:url(/static/fonts/space-grotesk-700.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Sans";font-weight:400;font-display:swap;src:url(/static/fonts/ibm-plex-sans-400.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Sans";font-weight:500;font-display:swap;src:url(/static/fonts/ibm-plex-sans-500.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Sans";font-weight:600;font-display:swap;src:url(/static/fonts/ibm-plex-sans-600.woff2) format("woff2")}
+:root{--noche:#070E1B;--panel:#0D1829;--panel2:#132238;--linea:#243857;--texto:#E8EFFA;--apagado:#A3B3CC;
+ --base:#35E0FF;--zona:#9AA8FF;--ruta:#FFC857;--ok:#3DDC97;--mal:#FF6B81}
 *{box-sizing:border-box}
-body{margin:0;background:var(--ink);color:var(--txt);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif}
-h1,h2,h3{font-family:"Space Grotesk",system-ui,sans-serif;margin:0;font-weight:700}
-header{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:16px 28px;border-bottom:1px solid var(--line)}
-.marca{display:flex;align-items:center;gap:12px}
-.marca h1{font-size:1.35rem}.marca p{margin:0;color:var(--mut);font-size:.85rem}
-.kpis{display:flex;gap:22px}
-.k{text-align:right}.k b{display:block;font:700 1.4rem "Space Grotesk",sans-serif;color:var(--base);font-variant-numeric:tabular-nums}
-.k span{color:var(--mut);font-size:.78rem}
-.centro{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:20px;padding:20px 28px}
-.mapa{position:relative;min-height:540px;border:1px solid var(--line);border-radius:14px;overflow:hidden;
- background:radial-gradient(ellipse at 50% 40%,#0E2038 0,#060D1A 70%);}
-.mapa::before{content:"";position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:44px 44px;opacity:.35}
-.mapa::after{content:"";position:absolute;left:0;right:0;height:120px;top:-120px;background:linear-gradient(transparent,rgba(53,224,255,.07),transparent);animation:barrido 7s linear infinite}
-@keyframes barrido{to{transform:translateY(760px)}}
-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:1}
-.leyenda{position:absolute;left:16px;bottom:14px;z-index:2;display:flex;gap:16px;font-size:.8rem;color:var(--mut)}
-.leyenda i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
-canvas{touch-action:none}.leyenda{flex-wrap:wrap;right:70px;gap:4px 16px}
-.zoom{position:absolute;right:14px;top:14px;z-index:2;display:flex;flex-direction:column;gap:6px}
-.zoom button{margin:0;width:36px;height:36px;padding:0;font-size:1.15rem;background:var(--panel2);color:var(--txt);border:1px solid var(--line)}
-#tip{position:absolute;z-index:3;pointer-events:none;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:.82rem;display:none}
-.lateral{display:flex;flex-direction:column;gap:16px}
-.tarjeta{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
-.tarjeta h2{font-size:1.05rem;margin-bottom:4px}
-.ayuda{color:var(--mut);font-size:.83rem;margin:0 0 10px}
-label{display:block;font-size:.82rem;color:var(--mut);margin-top:10px}
-input,select{width:100%;margin-top:4px;padding:9px 10px;background:var(--ink);color:var(--txt);border:1px solid var(--line);border-radius:8px;font:inherit}
-input[type=checkbox]{width:auto;margin-right:8px}
-button{margin-top:14px;padding:9px 16px;border:0;border-radius:8px;background:var(--base);color:#04121C;font:500 .9rem "IBM Plex Sans",sans-serif;cursor:pointer}
-button.sec{background:transparent;color:var(--txt);border:1px solid var(--line)}
-button:hover{filter:brightness(1.12)}
+html{color-scheme:dark}
+body{margin:0;background:var(--noche);color:var(--texto);font:15px/1.55 "IBM Plex Sans",system-ui,sans-serif;font-variant-numeric:tabular-nums}
+h1,h2,h3,h4{font-family:"Space Grotesk",system-ui,sans-serif;margin:0;font-weight:700;letter-spacing:-.01em}
+a{color:inherit}
 :focus-visible{outline:2px solid var(--ruta);outline-offset:2px}
-.res{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:.9rem}
-.res .t{font-weight:500}.res .t.ok{color:var(--ruta)}.res .t.mal{color:var(--mal)}
-.ruta,.chips{list-style:none;display:flex;flex-wrap:wrap;gap:6px;padding:0;margin:10px 0}
-.ruta li,.chip{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.8rem}
-.ruta li+li::before{content:"›";margin-right:6px;color:var(--ruta)}
-.chip.mal{border-color:var(--mal);color:var(--mal)}.chip.ok{border-color:var(--base);color:var(--base)}
-details{margin-top:10px}summary{cursor:pointer;color:var(--mut);font-size:.85rem}
-.adm{padding:0 28px 28px}.adm>summary{font:700 1.05rem "Space Grotesk",sans-serif;color:var(--txt);margin-bottom:14px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-bottom:16px}
-table{width:100%;border-collapse:collapse;font-size:.85rem}
-th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}th{color:var(--mut);font-weight:500}
-#mensaje{position:fixed;right:20px;bottom:20px;z-index:9;max-width:360px;padding:12px 16px;border-radius:10px;display:none;background:var(--panel2);border:1px solid var(--line)}
-#mensaje.ok{display:block;border-color:var(--base)}#mensaje.error{display:block;border-color:var(--mal);color:#FFC2CB}
-@media(max-width:900px){.centro{grid-template-columns:1fr;padding:16px}header,.adm{padding-left:16px;padding-right:16px}.mapa{min-height:420px}}
-@media(prefers-reduced-motion:reduce){.mapa::after{animation:none;display:none}}
+[hidden]{display:none!important}
+
+/* Barra superior */
+.barra{display:flex;align-items:center;gap:24px;flex-wrap:wrap;padding:10px 24px;border-bottom:1px solid var(--linea);background:var(--panel)}
+.marca{display:flex;align-items:center;gap:10px;text-decoration:none}
+.marca b{font:700 1.15rem "Space Grotesk",sans-serif}
+.nav{display:flex;gap:4px}
+.nav a{padding:6px 12px;border-radius:8px;text-decoration:none;color:var(--apagado)}
+.nav a[aria-current=page]{background:var(--panel2);color:var(--texto)}
+.kpis{display:flex;gap:20px;margin-left:auto;flex-wrap:wrap}
+.k{display:flex;align-items:baseline;gap:6px}
+.k b{font:700 1.3rem "Space Grotesk",sans-serif;color:var(--base)}
+.k span{color:var(--apagado);font-size:.82rem}
+
+/* Distribución: datos a la izquierda, mapa compacto a la derecha */
+.consola{display:grid;grid-template-columns:minmax(0,1fr) 430px;gap:20px;padding:20px 24px 32px;align-items:start;max-width:1560px;margin:0 auto}
+.lateral{position:sticky;top:16px}
+.pestanas{display:flex;gap:4px;border-bottom:1px solid var(--linea);margin-bottom:16px;overflow-x:auto}
+.pestanas button{background:none;border:0;border-bottom:2px solid transparent;color:var(--apagado);padding:10px 14px;font:500 .95rem "IBM Plex Sans",sans-serif;cursor:pointer;white-space:nowrap}
+.pestanas button[aria-selected=true]{color:var(--texto);border-color:var(--base)}
+
+/* Botones y campos */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:8px 16px;border-radius:10px;border:1px solid var(--base);background:var(--base);color:#04121C;font:600 .92rem "IBM Plex Sans",sans-serif;cursor:pointer;text-decoration:none}
+.btn.sec{background:transparent;color:var(--texto);border-color:var(--linea)}
+.btn.sec:hover{border-color:var(--apagado)}
+.btn:hover{filter:brightness(1.1)}
+.btn.mini{min-height:32px;padding:4px 10px;font-size:.85rem}
+label{display:block;font-size:.85rem;color:var(--apagado)}
+input,select{width:100%;margin-top:4px;min-height:40px;padding:8px 10px;background:var(--noche);color:var(--texto);border:1px solid var(--linea);border-radius:8px;font:inherit}
+.check{display:flex;align-items:center;gap:8px;color:var(--texto);margin-top:12px}
+.check input{width:auto;min-height:0;margin:0}
+.ayuda{color:var(--apagado);font-size:.85rem;margin:6px 0 0}
+.tarjeta{background:var(--panel);border:1px solid var(--linea);border-radius:12px;padding:16px}
+.tarjeta h2{font-size:1.05rem;margin-bottom:8px}
+.tarjeta .btn{margin-top:14px}
+
+/* Formulario de consulta */
+.consulta{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;margin-bottom:16px}
+.consulta .acciones{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px}
+.consulta .ayuda{grid-column:1/-1;margin:0}
+
+/* Resultados */
+#resultado{min-height:200px}
+.veredicto{display:flex;gap:14px;align-items:flex-start;padding:16px 18px;border-radius:12px;border:1px solid var(--linea);background:var(--panel)}
+.veredicto.ok{border-color:var(--ok);background:rgba(61,220,151,.08)}
+.veredicto.mal{border-color:var(--mal);background:rgba(255,107,129,.08)}
+.veredicto.ok .ico{color:var(--ok)}.veredicto.mal .ico{color:var(--mal)}
+.veredicto .ico svg{width:32px;height:32px;display:block}
+.veredicto h3{font-size:1.3rem;line-height:1.25}
+.veredicto p{margin:4px 0 0;color:var(--apagado)}
+.cifras{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:12px 0}
+.cifra{background:var(--panel);border:1px solid var(--linea);border-radius:12px;padding:12px 14px}
+.cifra b{display:block;font:700 2rem/1.1 "Space Grotesk",sans-serif}
+.cifra span{color:var(--apagado);font-size:.85rem}
+.cifra.destacada{border-color:var(--ruta)}.cifra.destacada b{color:var(--ruta)}
+.sub{color:var(--apagado);font-size:.88rem;font-weight:500;margin:18px 0 6px}
+.nota{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:12px 0;color:var(--apagado)}
+.ruta{display:flex;flex-wrap:wrap;align-items:center;gap:8px 0;list-style:none;padding:0;margin:12px 0}
+.parada{display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--panel2);border:1px solid var(--linea);border-radius:10px}
+.parada.base{color:var(--base)}.parada.zona{color:var(--zona)}
+.parada span{color:var(--texto)}.parada small{color:var(--apagado)}
+.parada .ico svg{width:18px;height:18px;display:block}
+.tramo{position:relative;padding:0 18px 0 10px;color:var(--ruta);font-weight:600;white-space:nowrap}
+.tramo::before{content:"";display:inline-block;width:14px;height:2px;background:var(--ruta);vertical-align:middle;margin-right:6px}
+.tramo::after{content:"";position:absolute;right:6px;top:50%;width:7px;height:7px;border-top:2px solid var(--ruta);border-right:2px solid var(--ruta);transform:translateY(-50%) rotate(45deg)}
+.compara{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px;margin:12px 0}
+.opcion{background:var(--panel);border:1px solid var(--linea);border-radius:12px;padding:14px 16px}
+.opcion.mejor{border-color:var(--ruta)}
+.opcion h4{font:600 .95rem "IBM Plex Sans",sans-serif;color:var(--apagado);display:flex;justify-content:space-between;gap:8px;align-items:center}
+.opcion .grande{font:700 2.1rem/1.15 "Space Grotesk",sans-serif;margin:4px 0 0}
+.opcion.mejor .grande{color:var(--ruta)}
+.etiqueta{font:600 .75rem "IBM Plex Sans",sans-serif;padding:2px 8px;border-radius:999px;background:var(--ruta);color:#1b1300}
+.etiqueta.mal{background:rgba(255,107,129,.18);color:#FFB3BF}
+.progreso{height:8px;border-radius:999px;background:var(--panel2);overflow:hidden;margin:12px 0 4px}
+.progreso i{display:block;height:100%;background:var(--ok)}
+.envuelve{overflow-x:auto}
+.tabla{width:100%;border-collapse:collapse;font-size:.9rem}
+.tabla th{color:var(--apagado);font-weight:500;text-align:left;padding:8px 10px;border-bottom:1px solid var(--linea);white-space:nowrap}
+.tabla td{padding:8px 10px;border-bottom:1px solid var(--linea);vertical-align:top}
+.tabla tr.destacada td{background:rgba(255,200,87,.09)}
+.tabla td.ok{color:var(--ok)}.tabla td.mal{color:var(--mal)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;list-style:none;padding:0;margin:6px 0}
+.chip{white-space:nowrap;padding:3px 12px;border:1px solid var(--linea);border-radius:999px;background:var(--panel2);font-size:.88rem}
+.chip.mal{border-color:var(--mal);color:#FFB3BF}.chip.ok{border-color:var(--ok);color:#A6F2CF}
+.asignar{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:flex-end;margin:14px 0;padding:14px;border:1px dashed var(--linea);border-radius:12px}
+.asignar label{flex:0 0 200px}
+.asignar .btn{margin-top:0}
+.asignar .ayuda{flex:1 1 100%;margin:0}
+.cab-seg{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.cab-seg .btn{margin-top:0}
+.tabla .btn{margin:0 6px 0 0}
+details.traza,details.escenario{margin-top:16px;border:1px solid var(--linea);border-radius:12px;background:var(--panel)}
+details summary{cursor:pointer;padding:10px 14px;color:var(--apagado)}
+details.escenario summary{display:flex;align-items:center;gap:10px;color:var(--texto);font-weight:600}
+details.escenario summary .ico svg{width:20px;height:20px;display:block}
+details.escenario.ok summary .ico{color:var(--ok)}details.escenario.mal summary .ico{color:var(--mal)}
+details>.envuelve,details>p{margin:0;padding:0 12px 12px}
+details>p{color:var(--apagado);font-size:.88rem}
+.inicio{border:1px dashed var(--linea);border-radius:12px;padding:20px;color:var(--apagado)}
+.inicio h3{color:var(--texto);font-size:1.15rem;margin-bottom:6px}
+.inicio .chips{margin-top:12px}
+.inicio button.chip{cursor:pointer;color:var(--texto);font:inherit;font-size:.88rem}
+.inicio button.chip:hover{border-color:var(--base)}
+
+/* Configuración y aceptación */
+.formularios,.tablas{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:16px}
+.formularios .tarjeta label+label,.formularios .tarjeta label+.check{margin-top:10px}
+.barra-red{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.barra-red .btn{margin:0}
+
+/* Mapa compacto, ampliable */
+.mapa-slot{height:410px}
+.mapa{display:flex;flex-direction:column;height:100%;border:1px solid var(--linea);border-radius:12px;background:var(--panel);overflow:hidden}
+.mapa-cab{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid var(--linea)}
+.mapa-cab h2{font-size:.95rem;margin-right:auto}
+.mapa-cab .btn{min-height:30px;padding:2px 10px;font-weight:500;font-size:.85rem;border-radius:8px}
+.lienzo{position:relative;flex:1;min-height:0;background:radial-gradient(ellipse at 50% 40%,#0E2038 0,#060D1A 75%)}
+.lienzo canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
+#tip{position:absolute;z-index:3;pointer-events:none;background:var(--panel2);border:1px solid var(--linea);border-radius:8px;padding:6px 10px;font-size:.82rem;display:none}
+.mapa-pie{display:flex;flex-wrap:wrap;gap:2px 14px;padding:8px 12px;border-top:1px solid var(--linea);font-size:.78rem;color:var(--apagado)}
+.mapa-pie i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+.mapa.ampliado{position:fixed;inset:14px;z-index:40;height:auto}
+#velo{position:fixed;inset:0;background:rgba(3,7,14,.8);z-index:39;display:none}
+body.con-velo #velo{display:block}
+body.con-velo{overflow:hidden}
+#mensaje{position:fixed;right:20px;bottom:20px;z-index:60;max-width:360px;padding:12px 16px;border-radius:10px;display:none;background:var(--panel2);border:1px solid var(--linea)}
+#mensaje.ok{display:block;border-color:var(--ok)}#mensaje.error{display:block;border-color:var(--mal);color:#FFC2CB}
+
+/* Mapa geográfico (Leaflet) */
+.mapa-slot.geo{height:480px}
+body.con-velo .lateral{z-index:40}   /* el panel ampliado debe quedar por encima de la capa oscura */
+.segmento{display:inline-flex;padding:2px;background:var(--noche);border:1px solid var(--linea);border-radius:9px}
+.segmento button{min-height:26px;padding:2px 12px;border:0;border-radius:7px;background:transparent;color:var(--apagado);font:500 .85rem "IBM Plex Sans",sans-serif;cursor:pointer}
+.segmento button[aria-pressed=true]{background:var(--panel2);color:var(--texto)}
+.segmento button:disabled{opacity:.45;cursor:not-allowed}
+.lienzo #mapa-geo{position:absolute;inset:0;background:#0A1424;font-family:inherit}
+.leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.92) saturate(.7)}
+.leaflet-container .leaflet-control-attribution{background:rgba(7,14,27,.75);color:var(--apagado)}
+.leaflet-control-attribution a{color:#9FC4FF}
+.zoom-flot{position:absolute;top:10px;left:10px;z-index:900;display:flex;flex-direction:column;gap:4px}
+.zoom-flot button{width:34px;height:34px;display:grid;place-items:center;padding:0;background:var(--panel);color:var(--texto);border:1px solid var(--linea);border-radius:8px;font:600 1.1rem "IBM Plex Sans",sans-serif;cursor:pointer}
+.zoom-flot button:hover{border-color:var(--apagado)}
+.mapa-nota{padding:8px 12px;border-top:1px solid var(--linea);background:rgba(255,200,87,.07);color:#FFE3A8;font-size:.8rem}
+.pin{position:absolute;left:0;top:0;transform:translate(-50%,-10px);display:flex;flex-direction:column;align-items:center;cursor:pointer;transition:opacity .3s}
+.pin i{display:block;width:18px;height:18px;border-radius:50%;border:2.5px solid var(--zona);background:#06101E;box-shadow:0 0 0 3px rgba(6,16,30,.7),0 0 12px var(--zona)}
+.pin.base i{position:relative;width:22px;height:22px;border:0;border-radius:0;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:var(--base);box-shadow:none}
+.pin.base i::after{content:"";position:absolute;inset:4px;background:#06101E;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.pin b{margin-top:4px;font:600 12px "IBM Plex Sans",sans-serif;color:#fff;white-space:nowrap;text-shadow:0 0 3px #000,0 0 6px #000,0 0 10px #000}
+.pin.dim{opacity:.4}.pin.visitado i{border-color:var(--base)}
+.pin.ruta i{border-color:var(--ruta);box-shadow:0 0 0 3px rgba(6,16,30,.7),0 0 14px var(--ruta)}
+.pin.malo i{border-color:var(--mal);box-shadow:0 0 0 3px rgba(6,16,30,.7),0 0 14px var(--mal);animation:latir 1s ease-in-out infinite}
+@keyframes latir{50%{transform:scale(1.3)}}
+.flecha-caja,.etq-caja{position:absolute;transform:translate(-50%,-50%);pointer-events:none}
+.flecha{width:0;height:0;border-left:11px solid #6FA0E8;border-top:6px solid transparent;border-bottom:6px solid transparent;filter:drop-shadow(0 0 2px #000)}
+.flecha.ruta{border-left-color:var(--ruta)}
+.etq-min{display:block;padding:1px 6px;border-radius:6px;background:rgba(7,14,27,.88);border:1px solid var(--linea);color:#CFE0FA;font:600 11px "IBM Plex Sans",sans-serif;white-space:nowrap}
+.etq-min.ruta{border-color:var(--ruta);color:var(--ruta)}
+path.flujo{animation:flujo 1.1s linear infinite}
+@keyframes flujo{to{stroke-dashoffset:-14}}
+@media(prefers-reduced-motion:reduce){path.flujo,.pin.malo i{animation:none}}
+
+/* Menú de usuario */
+.usuario{position:relative}
+#menu-usuario{display:flex;align-items:center;gap:10px;padding:4px 10px 4px 4px;background:var(--panel2);border:1px solid var(--linea);border-radius:999px;color:var(--texto);font:inherit;cursor:pointer}
+#menu-usuario:hover{border-color:var(--apagado)}
+.avatar{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--base);color:#04121C;font:700 .95rem "Space Grotesk",sans-serif}
+.u-txt{display:flex;flex-direction:column;text-align:left;line-height:1.2}
+.u-txt b{font-size:.88rem;font-weight:600}.u-txt small{color:var(--apagado);font-size:.75rem}
+.menu{position:absolute;right:0;top:calc(100% + 8px);z-index:50;width:290px;padding:14px;background:var(--panel);border:1px solid var(--linea);border-radius:12px;box-shadow:0 16px 40px rgba(0,0,0,.5)}
+.menu h2{font-size:.95rem}.menu p{margin:2px 0 10px;color:var(--apagado);font-size:.85rem}
+.menu ul{list-style:none;margin:0 0 12px;padding:0;font-size:.88rem}
+.menu li{display:flex;gap:8px;padding:3px 0}
+.menu li.si::before{content:"✔";color:var(--ok)}.menu li.no{color:var(--apagado)}.menu li.no::before{content:"✖";color:var(--mal)}
+.menu .btn{width:100%;margin:0}
+.aviso-consulta{margin-bottom:16px;padding:10px 14px;border:1px solid var(--base);border-radius:10px;background:rgba(53,224,255,.07);font-size:.9rem}
+.aviso-consulta b{color:var(--base)}
+.btn[disabled]{opacity:.6;cursor:progress}
+.btn.peligro{background:var(--mal);border-color:var(--mal);color:#2A0710}
+dialog{max-width:420px;width:calc(100% - 32px);padding:24px;background:var(--panel);color:var(--texto);border:1px solid var(--linea);border-radius:14px}
+dialog.ancho{max-width:520px}
+dialog label{margin-top:12px}dialog form>h2+p{margin-bottom:4px}
+textarea{width:100%;margin-top:4px;padding:8px 10px;background:var(--noche);color:var(--texto);border:1px solid var(--linea);border-radius:8px;font:inherit;resize:vertical}
+.error-dlg{color:var(--mal);margin:12px 0 0}
+.srv{border:1px solid var(--linea);border-radius:12px;padding:14px;margin-top:10px;background:var(--panel2)}
+.srv.pendiente{border-color:var(--ruta)}
+.srv-cab{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.srv-cuerpo p{margin:6px 0 0}
+.srv-acc{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.srv-acc .btn{margin:0}
+.chip.aviso{border-color:var(--ruta);color:var(--ruta)}
+dialog::backdrop{background:rgba(3,7,14,.75)}
+dialog h2{font-size:1.2rem;margin-bottom:8px}dialog p{margin:0 0 20px;color:var(--apagado)}
+.dlg-acc{display:flex;justify-content:flex-end;gap:8px}
+@media(max-width:1100px){.mapa-slot.geo{height:420px}.consola{grid-template-columns:1fr;padding:16px}.lateral{position:static}.mapa-slot{height:360px}.barra{padding:10px 16px}.kpis{margin-left:0}}
+@media(max-width:560px){.consulta{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<header>
-  <div class="marca">
-    <svg width="38" height="38" viewBox="0 0 38 38" aria-hidden="true"><g stroke="#35E0FF" stroke-width="1.5" fill="none"><path d="M19 6 30 12.5v13L19 32 8 25.5v-13Z"/><path d="M19 6v26M8 12.5l22 13M30 12.5 8 25.5" opacity=".4"/></g><circle cx="19" cy="19" r="3.5" fill="#FFC857"/></svg>
-    <div><h1>ServicioCerca</h1><p>Sepa en segundos qué zonas puede atender cada base.</p></div>
-  </div>
+<header class="barra">
+  <a class="marca" href="/" aria-label="ServicioCerca, ir al inicio">
+    <svg width="32" height="32" viewBox="0 0 38 38" aria-hidden="true"><g stroke="#35E0FF" stroke-width="1.6" fill="none"><path d="M19 6 30 12.5v13L19 32 8 25.5v-13Z"/><path d="M19 6v26M8 12.5l22 13M30 12.5 8 25.5" opacity=".4"/></g><circle cx="19" cy="19" r="3.5" fill="#FFC857"/></svg>
+    <b>ServicioCerca</b>
+  </a>
+  <nav class="nav" aria-label="Principal"><a href="/">Inicio</a><a href="/consola" aria-current="page">Consola de operación</a></nav>
   <div class="kpis" aria-label="Resumen de la red">
     <div class="k"><b id="k-bases">0</b><span>bases</span></div>
     <div class="k"><b id="k-zonas">0</b><span>zonas</span></div>
     <div class="k"><b id="k-tec">0</b><span>técnicos disponibles</span></div>
-    <div class="k"><b id="k-tray">0</b><span>trayectos</span></div>
+    <div class="k"><b id="k-tray">0</b><span>conexiones</span></div>
+  </div>
+  <div class="usuario">
+    <button type="button" id="menu-usuario" aria-haspopup="true" aria-expanded="false" aria-controls="menu-panel">
+      <span class="avatar" id="u-avatar" aria-hidden="true"></span>
+      <span class="u-txt"><b id="u-rol">…</b><small id="u-nombre"></small></span>
+    </button>
+    <div class="menu" id="menu-panel" hidden>
+      <h2 id="m-rol"></h2><p id="m-desc"></p>
+      <ul id="m-permisos" aria-label="Qué puede hacer"></ul>
+      <button type="button" class="btn sec" id="btn-salir">Cerrar sesión</button>
+    </div>
   </div>
 </header>
 
-<main class="centro">
-  <section class="mapa" aria-label="Mapa de la red de cobertura">
-    <canvas id="cv" role="img" aria-label="Grafo animado de bases y zonas"></canvas>
-    <div id="tip"></div>
-    <div class="zoom"><button id="z-mas" aria-label="Ampliar">+</button><button id="z-menos" aria-label="Reducir">−</button><button id="z-ini" aria-label="Restablecer vista">⟲</button></div>
-    <div class="leyenda"><span><i style="background:var(--base)"></i>Base</span><span><i style="background:var(--zona)"></i>Zona</span><span><i style="background:var(--ruta)"></i>Ruta</span><span><i style="background:var(--mal)"></i>Sin cobertura</span><span>Flecha: un sentido · dos carriles: ambos sentidos</span><span>Rueda: zoom · arrastre: mover</span></div>
+<main class="consola">
+  <section class="principal" aria-label="Operación">
+    <div class="aviso-consulta" id="aviso-consulta" hidden><b>Modo consulta.</b> Puede consultar la red, el mapa y los resultados, pero no modificarlos.</div>
+    <div class="pestanas" role="tablist" aria-label="Secciones de la consola">
+      <button role="tab" id="t-consultar" aria-controls="p-consultar" aria-selected="true">Consultar</button>
+      <button role="tab" id="t-configurar" aria-controls="p-configurar" aria-selected="false">Configurar red</button>
+      <button role="tab" id="t-aceptacion" aria-controls="p-aceptacion" aria-selected="false">Seguimiento</button>
+    </div>
+
+    <div id="p-consultar" role="tabpanel" aria-labelledby="t-consultar">
+      <form class="tarjeta consulta" id="form-cobertura">
+        <label>Origen <input id="q-origen" name="origen" required placeholder="B1" autocomplete="off"></label>
+        <label>Zona solicitada <input id="q-zona" name="zona" placeholder="Z5 (vacío: todo el alcance)" autocomplete="off"></label>
+        <div class="acciones">
+          <button type="submit" class="btn" id="btn-cobertura">Consultar cobertura</button>
+          <button type="button" class="btn sec" id="btn-costo">Menor costo</button>
+          <button type="button" class="btn sec" id="btn-mejor">¿Qué técnico llega primero?</button>
+        </div>
+        <p class="ayuda">Haga clic en el mapa para elegir una base o una zona. «Menor costo» necesita origen y zona; «¿Qué técnico llega primero?» solo necesita la zona.</p>
+      </form>
+      <div id="resultado" aria-live="polite"></div>
+    </div>
+
+    <div id="p-configurar" role="tabpanel" aria-labelledby="t-configurar" hidden>
+      <div class="barra-red">
+        <button type="button" class="btn" id="btn-ejemplo">Cargar red de ejemplo</button>
+        <button type="button" class="btn sec" id="btn-vaciar">Vaciar red</button>
+      </div>
+      <div class="formularios">
+        <form class="tarjeta" id="form-nodo"><h2>Registrar nodo</h2>
+          <label>ID <input name="id" required placeholder="Z1" autocomplete="off"></label>
+          <label>Nombre <input name="nombre" required placeholder="Laureles" autocomplete="off"></label>
+          <label>Tipo <select name="tipo"><option value="ZONA">Zona</option><option value="BASE">Base</option></select></label>
+          <label>Latitud (opcional) <input name="latitud" type="number" step="any" min="-90" max="90" placeholder="6.2518"></label>
+          <label>Longitud (opcional) <input name="longitud" type="number" step="any" min="-180" max="180" placeholder="-75.5636"></label>
+          <button type="submit" class="btn">Guardar nodo</button></form>
+        <form class="tarjeta" id="form-tecnico"><h2>Registrar técnico</h2>
+          <label>ID <input name="id" required placeholder="T1" autocomplete="off"></label>
+          <label>Nombre <input name="nombre" required placeholder="Ana" autocomplete="off"></label>
+          <label>Base <input name="base_id" required placeholder="B1" autocomplete="off"></label>
+          <label class="check"><input type="checkbox" name="disponible" checked>Disponible</label>
+          <button type="submit" class="btn">Guardar técnico</button></form>
+        <form class="tarjeta" id="form-trayecto"><h2>Registrar trayecto</h2>
+          <label>Origen <input name="origen" required placeholder="B1" autocomplete="off"></label>
+          <label>Destino <input name="destino" required placeholder="Z1" autocomplete="off"></label>
+          <label>Minutos <input name="minutos" required type="number" step="any" placeholder="10"></label>
+          <label class="check"><input type="checkbox" name="bidireccional" checked>Se recorre en ambos sentidos</label>
+          <button type="submit" class="btn">Guardar trayecto</button></form>
+      </div>
+      <div class="tablas">
+        <div class="tarjeta"><h2>Nodos</h2><div class="envuelve"><table class="tabla" id="tabla-nodos"></table></div></div>
+        <div class="tarjeta"><h2>Técnicos</h2><div class="envuelve"><table class="tabla" id="tabla-tecnicos"></table></div></div>
+        <div class="tarjeta"><h2>Conexiones</h2><div class="envuelve"><table class="tabla" id="tabla-trayectos"></table></div></div>
+      </div>
+    </div>
+
+    <div id="p-aceptacion" role="tabpanel" aria-labelledby="t-aceptacion" hidden>
+      <div class="tarjeta">
+        <div class="cab-seg">
+          <div><h2 id="seg-titulo">Servicios y técnicos</h2>
+            <p class="ayuda" style="margin-top:0" id="seg-ayuda">Quién atiende cada zona, por qué ruta y si se cumplió. Los servicios se asignan desde «Consultar».</p></div>
+          <button type="button" class="btn sec mini" id="btn-reiniciar-serv" hidden>Reiniciar servicios</button>
+        </div>
+        <div id="res-seguimiento" aria-live="polite"></div>
+      </div>
+      <div class="tarjeta" style="margin-top:16px" id="tarjeta-verif">
+        <h2>Verificación del sistema</h2>
+        <p class="ayuda" style="margin-top:0">Comprueba con cuatro casos que el sistema responde bien: una consulta normal, una zona que no existe, una zona sin conexión y un tiempo inválido. Se hace sobre una copia de la red de ejemplo, así que su red no cambia.</p>
+        <div class="barra-red" style="margin:14px 0 0">
+          <button type="button" class="btn" id="btn-aceptacion">Ejecutar verificación</button>
+          <a class="btn sec" id="btn-evidencia" href="/api/aceptacion/evidencia" download>Descargar informe</a>
+        </div>
+      </div>
+      <div id="res-aceptacion" aria-live="polite"></div>
+    </div>
   </section>
 
   <aside class="lateral">
-    <form class="tarjeta" id="form-cobertura">
-      <h2>Consultar cobertura</h2>
-      <p class="ayuda">Haga clic en el mapa para elegir una base de origen o una zona.
-        «Menor costo» calcula la ruta más rápida y necesita origen y zona.
-        «¿Qué técnico llega primero?» solo necesita la zona.</p>
-      <label>Origen <input id="q-origen" name="origen" required placeholder="B1"></label>
-      <label>Zona solicitada <input id="q-zona" name="zona" placeholder="Z5 (vacío: ver todo el alcance)"></label>
-      <button type="submit">Consultar cobertura</button>
-      <button type="button" class="sec" id="btn-costo">Menor costo</button>
-      <button type="button" class="sec" id="btn-mejor">¿Qué técnico llega primero?</button>
-      <div id="resultado" class="res" hidden></div>
-    </form>
-    <div class="tarjeta">
-      <h2>Datos de práctica</h2>
-      <p class="ayuda">Cargue una red de ejemplo para explorar el mapa.</p>
-      <button type="button" onclick="cargarEjemplo()">Cargar red de ejemplo</button>
-      <button type="button" class="sec" onclick="vaciarRed()">Vaciar red</button>
+    <div class="mapa-slot">
+      <section class="mapa" id="panel-mapa" aria-label="Mapa de la red de cobertura">
+        <div class="mapa-cab">
+          <h2>Mapa de la red</h2>
+          <div class="segmento" role="group" aria-label="Vista del mapa">
+            <button type="button" id="vista-esquema" aria-pressed="true">Esquema</button>
+            <button type="button" id="vista-mapa" aria-pressed="false">Mapa</button>
+          </div>
+          <button class="btn sec" id="btn-ampliar-mapa" aria-expanded="false">Ampliar mapa</button>
+        </div>
+        <div class="lienzo">
+          <canvas id="cv" role="img" aria-label="Grafo animado de bases y zonas. El resultado de cada consulta también se describe en texto."></canvas>
+          <div id="mapa-geo" hidden role="application" aria-label="Mapa de Medellín con las bases y zonas"></div>
+          <div class="zoom-flot">
+            <button type="button" id="z-mas" aria-label="Acercar">+</button>
+            <button type="button" id="z-menos" aria-label="Alejar">−</button>
+            <button type="button" id="z-ini" aria-label="Centrar la vista"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><circle cx="10" cy="10" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 1v4M10 15v4M1 10h4M15 10h4" stroke="currentColor" stroke-width="2"/></svg></button>
+          </div>
+          <div id="tip"></div>
+        </div>
+        <div id="mapa-nota" class="mapa-nota" hidden></div>
+        <div class="mapa-pie"><span><i style="background:var(--base)"></i>Base</span><span><i style="background:var(--zona)"></i>Zona</span><span><i style="background:var(--ruta)"></i>Ruta</span><span><i style="background:var(--mal)"></i>Sin cobertura</span><span>Con flecha: un sentido. Dos carriles o sin flecha: ambos sentidos.</span></div>
+      </section>
     </div>
   </aside>
 </main>
-
-<details class="adm" open>
-  <summary>Administrar la red</summary>
-  <div class="grid">
-    <form class="tarjeta" id="form-nodo"><h2>Registrar nodo</h2>
-      <label>ID <input name="id" required placeholder="Z1"></label>
-      <label>Nombre <input name="nombre" required placeholder="Laureles"></label>
-      <label>Tipo <select name="tipo"><option value="ZONA">Zona</option><option value="BASE">Base</option></select></label>
-      <button type="submit">Guardar nodo</button></form>
-    <form class="tarjeta" id="form-tecnico"><h2>Registrar técnico</h2>
-      <label>ID <input name="id" required placeholder="T1"></label>
-      <label>Nombre <input name="nombre" required placeholder="Ana"></label>
-      <label>Base <input name="base_id" required placeholder="B1"></label>
-      <label><input type="checkbox" name="disponible" checked>Disponible</label>
-      <button type="submit">Guardar técnico</button></form>
-    <form class="tarjeta" id="form-trayecto"><h2>Registrar trayecto</h2>
-      <label>Origen <input name="origen" required placeholder="B1"></label>
-      <label>Destino <input name="destino" required placeholder="Z1"></label>
-      <label>Minutos <input name="minutos" required type="number" step="any" placeholder="10"></label>
-      <label><input type="checkbox" name="bidireccional" checked>Se recorre en ambos sentidos</label>
-      <button type="submit">Guardar trayecto</button></form>
-  </div>
-  <div class="grid">
-    <div class="tarjeta"><h2>Nodos</h2><table id="tabla-nodos"></table></div>
-    <div class="tarjeta"><h2>Técnicos</h2><table id="tabla-tecnicos"></table></div>
-    <div class="tarjeta"><h2>Trayectos</h2><table id="tabla-trayectos"></table></div>
-  </div>
-</details>
+<dialog id="dlg-reporte" class="ancho" aria-labelledby="rep-titulo">
+  <form id="form-reporte">
+    <h2 id="rep-titulo">Reportar visita</h2><p id="rep-resumen"></p>
+    <label>¿Cómo fue la visita? <textarea name="texto" required maxlength="1000" rows="4" placeholder="Qué se hizo y cómo quedó la zona"></textarea></label>
+    <label class="check"><input type="checkbox" name="hay_novedad">Hubo una novedad</label>
+    <div id="rep-novedad" hidden>
+      <label>Tipo de novedad <select name="tipo"></select></label>
+      <label>Detalle de la novedad <textarea name="detalle" maxlength="500" rows="3" placeholder="Qué pasó y cómo afectó la visita"></textarea></label>
+    </div>
+    <p class="error-dlg" id="rep-error" role="alert" hidden></p>
+    <div class="dlg-acc"><button type="button" class="btn sec" data-cerrar>Cancelar</button><button type="submit" class="btn">Enviar reporte</button></div>
+  </form>
+</dialog>
+<dialog id="dlg-revision" class="ancho" aria-labelledby="rev-titulo">
+  <form id="form-revision">
+    <h2 id="rev-titulo"></h2><p id="rev-resumen"></p>
+    <label>Nota (opcional) <textarea name="nota" maxlength="500" rows="3" placeholder="Comentario para el técnico o para el registro"></textarea></label>
+    <p class="error-dlg" id="rev-error" role="alert" hidden></p>
+    <div class="dlg-acc"><button type="button" class="btn sec" data-cerrar>Cancelar</button><button type="submit" class="btn" id="rev-ok"></button></div>
+  </form>
+</dialog>
+<dialog id="dlg-confirmar" aria-labelledby="dlg-titulo">
+  <form method="dialog">
+    <h2 id="dlg-titulo"></h2><p id="dlg-texto"></p>
+    <div class="dlg-acc"><button value="cancelar" class="btn sec" autofocus>Cancelar</button><button value="ok" class="btn peligro" id="dlg-ok"></button></div>
+  </form>
+</dialog>
+<div id="velo"></div>
 <div id="mensaje" role="status"></div>
 
+<script src="/static/vendor/leaflet/leaflet.js"></script>
 <script>
 const $ = s => document.querySelector(s);
 const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
 let red = {nodos: [], tecnicos: [], trayectos: []}, G = {n: {}, e: []}, est = {visit: {}, camino: [], malos: {}, fin: 0}, S = {}, hov = null, vista = {k: 1, x: 0, y: 0};
+const SIN_ANIMACION = () => ({visit: {}, camino: [], malos: {}, fin: 0});
 
+/* ---------- Utilidades ---------- */
+function h(tag, clase, ...hijos) {
+  const e = document.createElement(tag); if (clase) e.className = clase;
+  for (const x of hijos.flat()) if (x != null && x !== false) e.append(x);   // append escribe texto, nunca HTML
+  return e;
+}
+const ICO = {
+  ok: '<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9.5 16.5l4.5 4.5 8.5-9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  mal: '<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" stroke-width="2"/><path d="M11 11l10 10M21 11 11 21" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>',
+  base: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2l7 4v8l-7 4-7-4V6z" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>',
+  zona: '<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>',
+};
+function ico(clave) { const s = h("span", "ico"); s.innerHTML = ICO[clave]; return s; }   // solo íconos fijos, sin datos del usuario
+function accion(texto, fn, clase = "sec mini") { const b = h("button", "btn " + clase, texto); b.type = "button"; b.addEventListener("click", fn); return b; }
+const fmt = n => Number.isInteger(n) ? String(n) : String(Math.round(n * 100) / 100);
+const nodo = id => red.nodos.find(n => n.id === id);
+const nombre = id => nodo(id) ? nodo(id).nombre : id;
+const minutosEntre = (a, b) => { const t = red.trayectos.find(x => x.origen === a && x.destino === b); return t ? t.minutos : null; };
+function tiempoRuta(ids) {
+  let total = 0;
+  for (let i = 1; i < ids.length; i++) { const m = minutosEntre(ids[i - 1], ids[i]); if (m == null) return null; total += m; }
+  return total;
+}
 function mensaje(t, tipo) {
   const c = $("#mensaje"); c.textContent = t; c.className = tipo;
   clearTimeout(mensaje.h); mensaje.h = setTimeout(() => c.className = "", 6000);
@@ -143,41 +413,67 @@ function mensaje(t, tipo) {
 async function llamarApi(m, u, b) {
   const o = {method: m, headers: {"Content-Type": "application/json"}};
   if (b) o.body = JSON.stringify(b);
-  const r = await fetch(u, o), d = await r.json();
+  const r = await fetch(u, o);
+  if (r.status === 401 && u !== "/api/sesion") { location.href = "/acceso?motivo=expirada"; throw new Error("Debe iniciar sesión."); }
+  const d = await r.json();
   if (!r.ok) throw new Error(d.error + (d.detalles ? " " + d.detalles.join("; ") : ""));
   return d;
 }
-function llenarTabla(id, enc, filas) {
-  const t = $("#" + id); t.innerHTML = "";
-  const h = t.insertRow(); enc.forEach(e => { const th = document.createElement("th"); th.textContent = e; h.appendChild(th); });
-  filas.forEach(f => { const tr = t.insertRow(); f.forEach(v => tr.insertCell().textContent = v); });
+function tabla(encabezados, filas, clases = {}) {
+  const t = h("table", "tabla"), cab = t.insertRow();
+  encabezados.forEach(e => cab.append(h("th", null, e)));
+  filas.forEach((f, i) => { const tr = t.insertRow(); if (clases.fila && clases.fila(i)) tr.className = clases.fila(i);
+    f.forEach((v, j) => { const td = tr.insertCell(); td.append(v); if (clases.celda && clases.celda(i, j)) td.className = clases.celda(i, j); }); });
+  return h("div", "envuelve", t);
 }
-function el(tag, texto, clase) { const e = document.createElement(tag); if (texto != null) e.textContent = texto; if (clase) e.className = clase; return e; }
+function llenarTabla(id, enc, filas) { const t = $("#" + id); t.replaceChildren(); const nueva = tabla(enc, filas).firstChild; t.append(...nueva.childNodes); }
 
-/* ---------- Disposición del grafo (fuerzas: nodos se repelen, trayectos atraen) ---------- */
+/* ---------- Enlaces entre nodos (la API entrega cada sentido por separado) ---------- */
+function calcularEnlaces() {
+  const dir = new Map(red.trayectos.map(t => [t.origen + ">" + t.destino, t.minutos]));
+  const pares = new Map();
+  for (const t of red.trayectos) {
+    const [a, b] = t.origen < t.destino ? [t.origen, t.destino] : [t.destino, t.origen], k = a + "|" + b;
+    if (!pares.has(k)) pares.set(k, {a, b, ab: dir.get(a + ">" + b) ?? null, ba: dir.get(b + ">" + a) ?? null});
+  }
+  return [...pares.values()];
+}
+const textoMinutos = e => e.ab != null && e.ba != null && e.ab !== e.ba ? `${fmt(e.ab)} / ${fmt(e.ba)} min` : `${fmt(e.ab ?? e.ba)} min`;
+
+/* ---------- Disposición del grafo (los nodos se repelen y las conexiones atraen) ---------- */
 function disponer() {
   const N = red.nodos, n = N.length; G.n = {};
   N.forEach((d, i) => { const a = i / n * 6.2832; G.n[d.id] = {d, x: Math.cos(a), y: Math.sin(a) * .8, vx: 0, vy: 0, h: i * 1.7}; });
-  G.e = red.trayectos.filter(e => G.n[e.origen] && G.n[e.destino]);
-  const P = Object.values(G.n); if (!P.length) return;
+  G.e = calcularEnlaces().filter(e => G.n[e.a] && G.n[e.b]);
+  const todos = Object.values(G.n); if (!todos.length) return;
+  const conectados = new Set(); G.e.forEach(e => { conectados.add(e.a); conectados.add(e.b); });
+  const P = todos.filter(p => conectados.has(p.d.id)), solos = todos.filter(p => !conectados.has(p.d.id));
+  if (!P.length) { solos.forEach((p, i) => { p.x = (i + .5) / solos.length; p.y = .5; }); return; }
   for (let k = 0; k < 400; k++) {
     for (let i = 0; i < P.length; i++) for (let j = i + 1; j < P.length; j++) {
       const a = P[i], b = P[j], dx = a.x - b.x, dy = a.y - b.y, f = .05 / (dx * dx + dy * dy + .02);
       a.vx += dx * f; a.vy += dy * f; b.vx -= dx * f; b.vy -= dy * f;
     }
-    G.e.forEach(e => { const a = G.n[e.origen], b = G.n[e.destino], ex = b.x - a.x, ey = b.y - a.y, L = Math.hypot(ex, ey) || .01, q = (L - .9) * .02 / L, dx = ex * q, dy = ey * q;
+    G.e.forEach(e => { const a = G.n[e.a], b = G.n[e.b], ex = b.x - a.x, ey = b.y - a.y, L = Math.hypot(ex, ey) || .01, q = (L - .9) * .02 / L, dx = ex * q, dy = ey * q;
       a.vx += dx; a.vy += dy; b.vx -= dx; b.vy -= dy; });
     P.forEach(p => { p.x += p.vx; p.y += p.vy; p.vx *= .8; p.vy *= .8; });
   }
   const xs = P.map(p => p.x), ys = P.map(p => p.y), x0 = Math.min(...xs), y0 = Math.min(...ys);
-  const w = (Math.max(...xs) - x0) || 1, h = (Math.max(...ys) - y0) || 1;
-  P.forEach(p => { p.x = (p.x - x0) / w; p.y = (p.y - y0) / h; });
-  const sep = Math.min(.2, .9 / Math.sqrt(P.length));
-  for (let k = 0; k < 80; k++) for (let i = 0; i < P.length; i++) for (let j = i + 1; j < P.length; j++) {
-    const a = P[i], b = P[j], dx = a.x - b.x, dy = a.y - b.y, d = Math.hypot(dx, dy) || .001;
-    if (d < sep) { const m = (sep - d) / 2 / d; a.x += dx * m; a.y += dy * m; b.x -= dx * m; b.y -= dy * m; }
+  const w = (Math.max(...xs) - x0) || 1, hh = (Math.max(...ys) - y0) || 1;
+  P.forEach(p => { p.x = (p.x - x0) / w; p.y = (p.y - y0) / hh; });
+  // Separación mínima medida en la forma real del lienzo (más ancho que alto) para que los nombres no se pisen.
+  const sep = Math.min(.34, 1.3 / Math.sqrt(P.length));
+  for (let k = 0; k < 200; k++) {
+    for (let i = 0; i < P.length; i++) for (let j = i + 1; j < P.length; j++) {
+      const a = P[i], b = P[j], dx = (a.x - b.x) * 1.5, dy = a.y - b.y, d = Math.hypot(dx, dy) || .001;
+      if (d < sep) { const m = (sep - d) / 2 / d; a.x += dx * m / 1.5; a.y += dy * m; b.x -= dx * m / 1.5; b.y -= dy * m; }
+    }
+    P.forEach(q => { q.x = Math.min(1, Math.max(0, q.x)); q.y = Math.min(1, Math.max(0, q.y)); });
   }
-  P.forEach(p => { p.x = Math.min(1, Math.max(0, p.x)); p.y = Math.min(1, Math.max(0, p.y)); });
+  // Los nodos sin conexiones se apartan en una columna a la derecha, para no deformar el resto del mapa.
+  const ancho = solos.length ? .82 : 1;
+  P.forEach(p => { p.x = Math.min(1, Math.max(0, p.x)) * ancho; p.y = Math.min(1, Math.max(0, p.y)); });
+  solos.forEach((p, i) => { p.x = 1; p.y = solos.length === 1 ? .5 : i / (solos.length - 1); });
 }
 
 /* ---------- Dibujo animado ---------- */
@@ -191,27 +487,30 @@ function hexagono(x, y, r) {
   cx.closePath();
 }
 function dibujar(ms) {
-  const t = ms / 1000, W = cv.clientWidth, H = cv.clientHeight, m = 56, amp = RM ? 0 : 4;
+  if (modoVista === "mapa") { requestAnimationFrame(dibujar); return; }   // el mapa geográfico se dibuja con Leaflet
+  const t = ms / 1000, W = cv.clientWidth, H = cv.clientHeight, mx = 46, my = 34, amp = RM ? 0 : 3;
   cx.setTransform(dpr, 0, 0, dpr, 0, 0); cx.clearRect(0, 0, W, H);
   cx.setTransform(dpr * vista.k, 0, 0, dpr * vista.k, vista.x * dpr, vista.y * dpr);
   S = {};
-  for (const k in G.n) { const p = G.n[k]; S[k] = [m + p.x * (W - 2 * m) + Math.sin(t * .7 + p.h) * amp, m + p.y * (H - 2 * m - 24) + Math.cos(t * .6 + p.h) * amp]; }
+  for (const k in G.n) { const p = G.n[k]; S[k] = [mx + p.x * (W - 2 * mx) + Math.sin(t * .7 + p.h) * amp, my + p.y * (H - 2 * my - 14) + Math.cos(t * .6 + p.h) * amp]; }
   const listo = est.fin && t >= est.fin, cam = listo ? est.camino : [];
   cx.textAlign = "center";
-  if (!red.nodos.length) { cx.fillStyle = "#8A9AB5"; cx.font = '15px "IBM Plex Sans",sans-serif'; cx.fillText("La red está vacía. Cargue la red de ejemplo o registre un nodo.", W / 2, H / 2); }
+  if (!red.nodos.length) { cx.fillStyle = "#A3B3CC"; cx.font = '14px "IBM Plex Sans",sans-serif'; cx.fillText("La red está vacía.", W / 2, H / 2 - 4); cx.fillText("Cargue la red de ejemplo o registre un nodo.", W / 2, H / 2 + 16); }
 
   G.e.forEach((e, ei) => {
-    const [ax, ay] = S[e.origen], [bx, by] = S[e.destino], len = Math.hypot(bx - ax, by - ay) || 1;
-    const nx = -(by - ay) / len, ny = (bx - ax) / len, off = e.bidireccional ? 6 : 0;
+    const [ax, ay] = S[e.a], [bx, by] = S[e.b], len = Math.hypot(bx - ax, by - ay) || 1;
+    const nx = -(by - ay) / len, ny = (bx - ax) / len, doble = e.ab != null && e.ba != null, off = doble ? 5 : 0;
     const usa = (f, g) => cam.some((id, i) => i && cam[i - 1] == f && id == g);
-    const carriles = [[e.origen, e.destino, 1, "#35E0FF"]];
-    if (e.bidireccional) carriles.push([e.destino, e.origen, -1, "#9AA8FF"]);
+    const carriles = [];
+    if (e.ab != null) carriles.push([e.a, e.b, 1, "#35E0FF"]);
+    if (e.ba != null) carriles.push([e.b, e.a, -1, "#9AA8FF"]);
+    let enRuta = false;
     carriles.forEach(([f, g, sg, col]) => {
       const [x1, y1] = S[f], [x2, y2] = S[g], dx = (x2 - x1) / len, dy = (y2 - y1) / len;
-      const ox = nx * off * sg, oy = ny * off * sg, ruta = usa(f, g), c = ruta ? "#FFC857" : col;
-      cx.strokeStyle = ruta ? c : "rgba(120,160,220,.28)"; cx.lineWidth = ruta ? 2.5 : 1;
+      const ox = nx * off * sg, oy = ny * off * sg, ruta = usa(f, g), c = ruta ? "#FFC857" : col; enRuta = enRuta || ruta;
+      cx.strokeStyle = ruta ? c : "rgba(120,160,220,.3)"; cx.lineWidth = ruta ? 2.5 : 1;
       cx.beginPath(); cx.moveTo(x1 + ox, y1 + oy); cx.lineTo(x2 + ox, y2 + oy); cx.stroke();
-      const fx = x2 + ox - dx * 26, fy = y2 + oy - dy * 26;
+      const fx = x2 + ox - dx * 22, fy = y2 + oy - dy * 22;
       cx.fillStyle = c; cx.beginPath(); cx.moveTo(fx + dx * 7, fy + dy * 7);
       cx.lineTo(fx - dx * 3 - dy * 4, fy - dy * 3 + dx * 4); cx.lineTo(fx - dx * 3 + dy * 4, fy - dy * 3 - dx * 4); cx.closePath(); cx.fill();
       if (RM) return;
@@ -221,31 +520,31 @@ function dibujar(ms) {
         cx.beginPath(); cx.arc(x1 + ox + (x2 - x1) * u, y1 + oy + (y2 - y1) * u, ruta ? 3 : 2.2, 0, 6.2832); cx.fill(); cx.globalAlpha = 1;
       }
     });
-    if (W > 520) { cx.fillStyle = "#8A9AB5"; cx.font = '11px "IBM Plex Sans",sans-serif';
-      cx.fillText(e.minutos + " min", (ax + bx) / 2 + nx * (off ? 18 : 0), (ay + by) / 2 + ny * (off ? 18 : 0) - (off ? 0 : 5)); }
+    if (W > 560 || enRuta) { cx.fillStyle = enRuta ? "#FFC857" : "#A3B3CC"; cx.font = '600 11px "IBM Plex Sans",sans-serif';
+      cx.fillText(textoMinutos(e), (ax + bx) / 2 + nx * (doble ? 17 : 0), (ay + by) / 2 + ny * (doble ? 17 : 0) - (doble ? 0 : 5)); }
   });
 
   for (const k in G.n) {
-    const d = G.n[k].d, [x, y] = S[k], base = d.tipo === "BASE", r = base ? 13 : 9;
+    const d = G.n[k].d, [x, y] = S[k], base = d.tipo === "BASE", r = base ? 12 : 8;
     const v = est.visit[k], lit = v !== undefined && t >= v, mal = listo && est.malos[k];
     const dim = est.fin && !lit && !mal;
-    const col = mal ? "#FF5D73" : base ? "#35E0FF" : "#9AA8FF";
+    const col = mal ? "#FF6B81" : base ? "#35E0FF" : "#9AA8FF";
     cx.globalAlpha = dim ? .3 : 1;
-    if (lit && t - v < 1.3) { cx.strokeStyle = col; cx.globalAlpha = 1 - (t - v) / 1.3; cx.lineWidth = 2; cx.beginPath(); cx.arc(x, y, r + (t - v) * 30, 0, 6.2832); cx.stroke(); cx.globalAlpha = 1; }
-    if (mal) { cx.strokeStyle = col; cx.globalAlpha = .5 + .5 * Math.sin(t * 5); cx.beginPath(); cx.arc(x, y, r + 8, 0, 6.2832); cx.stroke(); cx.globalAlpha = 1; }
-    cx.shadowColor = col; cx.shadowBlur = (lit || hov === k) ? 22 : 8;
+    if (lit && t - v < 1.3) { cx.strokeStyle = col; cx.globalAlpha = 1 - (t - v) / 1.3; cx.lineWidth = 2; cx.beginPath(); cx.arc(x, y, r + (t - v) * 26, 0, 6.2832); cx.stroke(); cx.globalAlpha = 1; }
+    if (mal) { cx.strokeStyle = col; cx.globalAlpha = .5 + .5 * Math.sin(t * 5); cx.beginPath(); cx.arc(x, y, r + 7, 0, 6.2832); cx.stroke(); cx.globalAlpha = 1; }
+    cx.shadowColor = col; cx.shadowBlur = (lit || hov === k) ? 20 : 6;
     cx.fillStyle = "#06101E"; cx.strokeStyle = col; cx.lineWidth = hov === k ? 3 : 2;
     if (base) hexagono(x, y, r); else { cx.beginPath(); cx.arc(x, y, r, 0, 6.2832); }
     cx.fill(); cx.stroke(); cx.shadowBlur = 0;
-    cx.fillStyle = col; cx.beginPath(); cx.arc(x, y, base ? 4 : 3, 0, 6.2832); cx.fill();
-    cx.fillStyle = "#D7E3F4"; cx.font = '12px "IBM Plex Sans",sans-serif'; cx.fillText(d.nombre, x, y + r + 16);
+    cx.fillStyle = col; cx.beginPath(); cx.arc(x, y, base ? 3.5 : 2.5, 0, 6.2832); cx.fill();
+    cx.fillStyle = "#E8EFFA"; cx.font = '500 12px "IBM Plex Sans",sans-serif'; cx.fillText(d.nombre, x, y + r + 15);
     cx.globalAlpha = 1;
   }
   requestAnimationFrame(dibujar);
 }
 requestAnimationFrame(dibujar);
 
-/* Interacción: zoom (rueda y botones), arrastre para mover, información al pasar y clic para elegir */
+/* ---------- Interacción con el mapa: zoom, arrastre, información y selección ---------- */
 function aMundo(ev) { const b = cv.getBoundingClientRect(); return [(ev.clientX - b.left - vista.x) / vista.k, (ev.clientY - b.top - vista.y) / vista.k]; }
 function nodoCerca(ev) { const [x, y] = aMundo(ev); return Object.keys(S).find(k => Math.hypot(S[k][0] - x, S[k][1] - y) < 18) || null; }
 function zoom(f, px, py) {
@@ -253,7 +552,9 @@ function zoom(f, px, py) {
   px = px ?? cv.clientWidth / 2; py = py ?? cv.clientHeight / 2;
   vista.x = px - (px - vista.x) * r; vista.y = py - (py - vista.y) * r; vista.k = k;
 }
-$("#z-mas").onclick = () => zoom(1.25); $("#z-menos").onclick = () => zoom(.8); $("#z-ini").onclick = () => { vista = {k: 1, x: 0, y: 0}; };
+$("#z-mas").onclick = () => modoVista === "mapa" ? mapaGeo.zoomIn() : zoom(1.25);
+$("#z-menos").onclick = () => modoVista === "mapa" ? mapaGeo.zoomOut() : zoom(.8);
+$("#z-ini").onclick = () => { if (modoVista === "mapa") actualizarMapa(true); else vista = {k: 1, x: 0, y: 0}; };
 cv.addEventListener("wheel", ev => { ev.preventDefault(); const b = cv.getBoundingClientRect(); zoom(ev.deltaY < 0 ? 1.15 : .87, ev.clientX - b.left, ev.clientY - b.top); }, {passive: false});
 let arr = null;
 cv.addEventListener("pointerdown", ev => { arr = {x: ev.clientX, y: ev.clientY, vx: vista.x, vy: vista.y, mov: false}; cv.setPointerCapture(ev.pointerId); });
@@ -266,113 +567,427 @@ cv.addEventListener("pointermove", ev => {
   const d = G.n[hov].d, tec = red.tecnicos.filter(t => t.base_id === d.id && t.disponible).length;
   tip.textContent = `${d.nombre} (${d.id}) · ${d.tipo === "BASE" ? "Base · " + tec + " técnico(s) disponible(s)" : "Zona"}`;
   const b = cv.getBoundingClientRect();
-  tip.style.display = "block"; tip.style.left = Math.min(ev.clientX - b.left + 14, b.width - 240) + "px"; tip.style.top = (ev.clientY - b.top + 14) + "px";
+  tip.style.display = "block"; tip.style.left = Math.max(4, Math.min(ev.clientX - b.left + 14, b.width - 250)) + "px"; tip.style.top = (ev.clientY - b.top + 14) + "px";
 });
-cv.addEventListener("pointerup", ev => { if (arr && !arr.mov) { const k = nodoCerca(ev); if (k) $(G.n[k].d.tipo === "BASE" ? "#q-origen" : "#q-zona").value = k; } arr = null; });
+cv.addEventListener("pointerup", ev => { if (arr && !arr.mov) { const k = nodoCerca(ev); if (k) elegirNodo(k); } arr = null; });
 cv.addEventListener("pointerleave", () => { hov = null; $("#tip").style.display = "none"; });
 
-/* ---------- Animación de la búsqueda (BFS) ---------- */
+function alternarMapa(abrir) {
+  const p = $("#panel-mapa"), ab = abrir ?? !p.classList.contains("ampliado");
+  p.classList.toggle("ampliado", ab); document.body.classList.toggle("con-velo", ab);
+  $("#btn-ampliar-mapa").textContent = ab ? "Cerrar" : "Ampliar mapa"; $("#btn-ampliar-mapa").setAttribute("aria-expanded", String(ab));
+  vista = {k: 1, x: 0, y: 0};
+  setTimeout(() => { if (mapaGeo && modoVista === "mapa") { mapaGeo.invalidateSize(); actualizarMapa(true); } }, 80);
+}
+$("#btn-ampliar-mapa").onclick = () => alternarMapa();
+$("#velo").onclick = () => alternarMapa(false);
+addEventListener("keydown", ev => { if (ev.key === "Escape") alternarMapa(false); });
+
+/* ---------- Mapa geográfico de Medellín (Leaflet + OpenStreetMap) ---------- */
+let modoVista = "esquema", mapaGeo = null, capaGeo = null, flechas = [], teselasFallidas = 0;
+const MEDELLIN = [6.2442, -75.5812];
+const conUbicacion = () => red.nodos.filter(n => n.latitud != null && n.longitud != null);
+function elegirNodo(id) {
+  const n = nodo(id); if (!n) return;
+  $(n.tipo === "BASE" ? "#q-origen" : "#q-zona").value = id; abrirPestana("t-consultar");
+}
+function notaMapa() {
+  const sin = red.nodos.filter(n => n.latitud == null || n.longitud == null).map(n => n.nombre), partes = [];
+  if (modoVista === "mapa" && teselasFallidas >= 4) partes.push("No se pudo cargar el mapa base (¿sin conexión a internet?). Las ubicaciones y las rutas se siguen viendo; también puede usar la vista Esquema.");
+  if (modoVista === "mapa" && sin.length) partes.push("Sin ubicación (no aparecen en el mapa): " + sin.join(", ") + ".");
+  const n = $("#mapa-nota"); n.textContent = partes.join(" "); n.hidden = !partes.length;
+}
+function iniciarMapa() {
+  if (mapaGeo) { mapaGeo.invalidateSize(); return; }
+  mapaGeo = L.map("mapa-geo", {zoomControl: false, minZoom: 9, maxZoom: 18, zoomSnap: .25}).setView(MEDELLIN, 12);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {maxZoom: 19,
+    attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'})
+    .on("tileerror", () => { if (++teselasFallidas === 4) notaMapa(); })
+    .on("tileload", () => { if (teselasFallidas) { teselasFallidas = 0; notaMapa(); } })
+    .addTo(mapaGeo);
+  capaGeo = L.layerGroup().addTo(mapaGeo);
+  mapaGeo.on("zoomend", () => actualizarMapa(false));   // las etiquetas de minutos dependen del zoom
+}
+const entre = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+const icono = el => L.divIcon({className: "", html: el, iconSize: [0, 0]});   // el: elemento DOM, nunca HTML con datos
+function actualizarMapa(ajustar) {
+  if (!mapaGeo || modoVista !== "mapa") return;
+  capaGeo.clearLayers(); flechas = [];
+  const pos = {}; conUbicacion().forEach(n => pos[n.id] = [n.latitud, n.longitud]);
+  const listo = est.fin && performance.now() / 1000 >= est.fin, cam = listo ? est.camino : [];
+  const usa = (f, g) => cam.some((id, i) => i && cam[i - 1] === f && id === g);
+  const ampliado = $("#panel-mapa").classList.contains("ampliado");
+
+  calcularEnlaces().filter(e => pos[e.a] && pos[e.b]).forEach(e => {
+    const doble = e.ab != null && e.ba != null, enRuta = usa(e.a, e.b) || usa(e.b, e.a);
+    const [desde, hasta] = doble || e.ab != null ? [e.a, e.b] : [e.b, e.a];
+    L.polyline([pos[desde], pos[hasta]], {color: enRuta ? "#FFC857" : "#6FA0E8", weight: enRuta ? 5 : 3, opacity: enRuta ? 1 : .8,
+      dashArray: doble || enRuta ? null : "7 7", className: doble || enRuta ? "" : "flujo", interactive: false}).addTo(capaGeo);
+    if (!doble) {
+      const punta = h("span", "flecha" + (enRuta ? " ruta" : ""));
+      L.marker(entre(pos[desde], pos[hasta], .62), {icon: icono(h("span", "flecha-caja", punta)), interactive: false, keyboard: false}).addTo(capaGeo);
+      flechas.push({el: punta, desde: pos[desde], hasta: pos[hasta]});
+    }
+    if (ampliado || enRuta || mapaGeo.getZoom() >= 13)
+      L.marker(entre(pos[e.a], pos[e.b], doble ? .5 : .38), {icon: icono(h("span", "etq-caja", h("span", "etq-min" + (enRuta ? " ruta" : ""), textoMinutos(e)))), interactive: false, keyboard: false}).addTo(capaGeo);
+  });
+
+  conUbicacion().forEach(n => {
+    const visto = est.visit[n.id] !== undefined, malo = listo && est.malos[n.id];
+    const clases = "pin " + (n.tipo === "BASE" ? "base" : "zona") + (cam.includes(n.id) ? " ruta" : "") + (malo ? " malo" : listo && !visto ? " dim" : visto && listo ? " visitado" : "");
+    L.marker(pos[n.id], {icon: icono(h("span", clases, h("i"), h("b", null, n.nombre))), title: `${n.nombre} (${n.id})`, riseOnHover: true, zIndexOffset: 1000})   // los nombres quedan sobre las etiquetas de minutos
+      .on("click", () => elegirNodo(n.id)).addTo(capaGeo);
+  });
+
+  flechas.forEach(f => { const a = mapaGeo.latLngToContainerPoint(f.desde), b = mapaGeo.latLngToContainerPoint(f.hasta);
+    f.el.style.transform = `rotate(${Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI}deg)`; });
+  const puntos = Object.values(pos);
+  if (ajustar && puntos.length) puntos.length === 1 ? mapaGeo.setView(puntos[0], 14) : mapaGeo.fitBounds(L.latLngBounds(puntos), {padding: [30, 30], maxZoom: 14});
+  notaMapa();
+}
+function fijarVista(modo) {
+  if (modo === "mapa" && !conUbicacion().length) modo = "esquema";
+  modoVista = modo;
+  $("#vista-esquema").setAttribute("aria-pressed", String(modo === "esquema")); $("#vista-mapa").setAttribute("aria-pressed", String(modo === "mapa"));
+  document.querySelector(".mapa-slot").classList.toggle("geo", modo === "mapa");   // Medellín es alto y angosto: el panel crece un poco
+  $("#cv").hidden = modo === "mapa"; $("#mapa-geo").hidden = modo !== "mapa"; $("#tip").style.display = "none";
+  if (modo === "mapa") { iniciarMapa(); actualizarMapa(true); }
+  notaMapa();
+}
+function elegirVista(modo) { fijarVista(modo); try { localStorage.setItem("sc_vista", modo); } catch { /* sin almacenamiento: no se recuerda */ } }
+function vistaInicial() {
+  let guardada = null; try { guardada = localStorage.getItem("sc_vista"); } catch { /* sin almacenamiento */ }
+  return guardada || (conUbicacion().length ? "mapa" : "esquema");
+}
+$("#vista-esquema").onclick = () => elegirVista("esquema");
+$("#vista-mapa").onclick = () => elegirVista("mapa");
+
+/* ---------- Animación de la búsqueda ---------- */
 function animar(r, zona) {
-  const t0 = performance.now() / 1000, dt = RM ? 0 : .5;
+  const t0 = performance.now() / 1000, dt = RM ? 0 : .45;
   est = {visit: {}, camino: [], malos: {}, fin: t0 + r.traza.length * dt + .3};
   r.traza.forEach((p, i) => [p.actual, ...p.nuevos].filter(Boolean).forEach(id => { if (!(id in est.visit)) est.visit[id] = t0 + i * dt; }));
   if (zona) { if (r.cubierta) est.camino = r.camino; else est.malos[zona] = 1; }
   else (r.zonas_no_alcanzables || []).forEach(id => est.malos[id] = 1);
+  actualizarMapa(false);   // en el mapa geográfico el resultado se resalta al terminar la onda
+  const espera = (est.fin - performance.now() / 1000) * 1000;
+  if (espera > 0) setTimeout(() => actualizarMapa(false), espera + 30);
 }
-function nombre(id) { return G.n[id] ? G.n[id].d.nombre : id; }
-function mostrarResultado(r, zona) {
-  const c = $("#resultado"); c.hidden = false; c.replaceChildren();
-  c.appendChild(el("div", r.mensaje, "t " + ((zona ? r.cubierta : true) ? "ok" : "mal")));
-  if (zona && r.cubierta) {
-    const ol = el("ol", null, "ruta"); r.camino.forEach(id => ol.appendChild(el("li", nombre(id)))); c.appendChild(ol);
-    c.appendChild(el("div", `${r.tramos} tramo(s)`, "ayuda"));
-  } else if (!zona) {
-    const ch = (arr, clase) => { const u = el("ul", null, "chips"); arr.forEach(x => u.appendChild(el("li", x, "chip " + clase))); return u; };
-    c.appendChild(el("div", "Alcanzables", "ayuda")); c.appendChild(ch(r.zonas_alcanzables.map(z => `${z.nombre} · ${z.tramos}`), "ok"));
-    if (r.zonas_no_alcanzables.length) { c.appendChild(el("div", "Sin cobertura", "ayuda")); c.appendChild(ch(r.zonas_no_alcanzables.map(nombre), "mal")); }
-    c.appendChild(el("div", "Técnicos disponibles", "ayuda")); c.appendChild(ch(r.tecnicos_disponibles.map(t => t.nombre).length ? r.tecnicos_disponibles.map(t => t.nombre) : ["ninguno"], ""));
+
+/* ---------- Piezas de la presentación de resultados ---------- */
+function veredicto(ok, titulo, texto) { return h("div", "veredicto " + (ok ? "ok" : "mal"), ico(ok ? "ok" : "mal"), h("div", null, h("h3", null, titulo), texto ? h("p", null, texto) : null)); }
+const cifra = (valor, etiqueta, destacada) => h("div", "cifra" + (destacada ? " destacada" : ""), h("b", null, valor), h("span", null, etiqueta));
+function ruta(ids) {
+  const ol = h("ol", "ruta");
+  ids.forEach((id, i) => {
+    if (i) { const m = minutosEntre(ids[i - 1], id); ol.append(h("li", "tramo", m != null ? fmt(m) + " min" : "")); }
+    const base = nodo(id) && nodo(id).tipo === "BASE";
+    ol.append(h("li", "parada " + (base ? "base" : "zona"), ico(base ? "base" : "zona"), h("span", null, nombre(id), " ", h("small", null, id))));
+  });
+  return ol;
+}
+const chips = (lista, clase) => h("ul", "chips", lista.map(x => h("li", "chip " + (clase || ""), x)));
+function traza(titulo, ayuda, encabezados, filas) {
+  return h("details", "traza", h("summary", null, titulo), h("p", null, ayuda), tabla(encabezados, filas));
+}
+const trazaBFS = t => traza("Ver paso a paso de la búsqueda", "Cada fila revisa un lugar de la fila de espera y agrega sus vecinos nuevos al final.",
+  ["Paso", "Se revisa", "Nuevos", "Fila de espera"], t.map(p => [p.paso, p.actual ?? "inicio", p.nuevos.join(", "), p.cola.join(", ")]));
+const trazaDijkstra = (t, titulo) => traza(titulo || "Ver paso a paso del cálculo (Dijkstra)",
+  "Cada fila es el lugar pendiente más barato. ✔ mejora el tiempo conocido de un vecino; ✘ no lo mejora y se descarta.",
+  ["Paso", "Sale (minutos)", "Tiempos candidatos", "Pendientes (minutos)"],
+  t.map(p => [p.paso, p.actual == null ? "inicio" : `${p.actual} (${fmt(p.costo_actual)})`,
+    p.relajaciones.map(x => `${x.vecino}: ${fmt(x.candidato)}${x.mejora ? " ✔" : " ✘"}`).join(", "), p.cola.map(x => `${x.id}: ${fmt(x.costo)}`).join(", ")]));
+
+/* ---------- Vistas de cada consulta ---------- */
+function vistaCobertura(r) {
+  const c = h("div");
+  if (r.cubierta) {
+    const t = tiempoRuta(r.camino);
+    c.append(veredicto(true, `${nombre(r.zona)} está cubierta desde ${nombre(r.origen)}`, r.mensaje),
+      h("div", "cifras", cifra(r.tramos, r.tramos === 1 ? "tramo" : "tramos"), t != null ? cifra(fmt(t), "minutos por esta ruta") : null),
+      ruta(r.camino),
+      h("div", "nota", "La cobertura elige la ruta con menos tramos, no la más rápida.", accion("Buscar la ruta más rápida", () => lanzar("costo", r.origen, r.zona))));
+  } else {
+    c.append(veredicto(false, `${nombre(r.zona)} no tiene cobertura desde ${nombre(r.origen)}`, r.mensaje),
+      h("div", "nota", "Compare con las demás bases:", accion("¿Qué técnico llega primero?", () => lanzar("mejor", r.origen, r.zona))));
   }
-  const d = el("details"); d.appendChild(el("summary", "Ver paso a paso de la búsqueda"));
-  const tb = el("table"); tb.id = "tabla-traza"; d.appendChild(tb); c.appendChild(d);
-  llenarTabla("tabla-traza", ["Paso", "Se saca", "Nuevos", "Cola"], r.traza.map(p => [p.paso, p.actual ?? "inicio", p.nuevos.join(", "), p.cola.join(", ")]));
+  c.append(trazaBFS(r.traza)); return c;
 }
-/* ---------- F3: menor costo (Dijkstra) ---------- */
-const limpiarAnimacion = () => { $("#resultado").hidden = true; est = {visit: {}, camino: [], malos: {}, fin: 0}; };
-const listaRuta = ids => { const ol = el("ol", null, "ruta"); ids.forEach(id => ol.appendChild(el("li", nombre(id)))); return ol; };
-function trazaDijkstra(c, traza, titulo) {
-  const d = el("details"); d.appendChild(el("summary", titulo));
-  const tb = el("table"); tb.id = "tabla-traza"; d.appendChild(tb); c.appendChild(d);
-  llenarTabla("tabla-traza", ["Paso", "Sale (costo)", "Costos candidatos", "Pendientes (costo)"], traza.map(p => [p.paso,
-    p.actual == null ? "inicio" : `${p.actual} (${p.costo_actual})`,
-    p.relajaciones.map(x => `${x.vecino}:${x.candidato}${x.mejora ? "✔" : "✘"}`).join(", "),
-    p.cola.map(x => `${x.id}:${x.costo}`).join(", ")]));
-}
-function mostrarCosto(r) {
-  const c = $("#resultado"); c.hidden = false; c.replaceChildren();
-  c.appendChild(el("div", r.mensaje, "t " + (r.alcanzable ? "ok" : "mal")));
-  if (r.alcanzable) {
-    c.appendChild(listaRuta(r.camino)); c.appendChild(el("div", `${r.costo} min · ${r.tramos} tramo(s)`, "ayuda"));
-    if (r.menos_tramos_es_mas_caro) {
-      c.appendChild(el("div", `Ruta con menos tramos, pero más lenta (${r.comparacion_bfs.costo} min)`, "ayuda"));
-      c.appendChild(listaRuta(r.comparacion_bfs.camino));
-    }
+function vistaAlcance(r) {
+  const n = r.zonas_alcanzables.length, tot = n + r.zonas_no_alcanzables.length, c = h("div");
+  const barra = h("div", "progreso", h("i")); barra.firstChild.style.width = (tot ? n / tot * 100 : 0) + "%";
+  c.append(veredicto(n > 0, r.mensaje, "Los tramos cuentan cuántos trayectos hay que recorrer hasta cada zona."), barra);
+  if (n) {
+    c.append(h("p", "sub", "Zonas alcanzables, de la más cercana a la más lejana"),
+      tabla(["Zona", "Código", "Tramos"], r.zonas_alcanzables.map(z => [z.nombre, z.id, z.tramos])));
   }
-  trazaDijkstra(c, r.traza, "Ver paso a paso del cálculo (Dijkstra)");
+  if (r.zonas_no_alcanzables.length) c.append(h("p", "sub", "Zonas sin cobertura desde esta base"), chips(r.zonas_no_alcanzables.map(nombre), "mal"));
+  c.append(h("p", "sub", "Técnicos disponibles en la base"),
+    r.tecnicos_disponibles.length ? chips(r.tecnicos_disponibles.map(t => t.nombre), "ok") : chips(["Ninguno disponible"], "mal"));
+  c.append(trazaBFS(r.traza)); return c;
 }
-function mostrarMejorBase(r) {
-  const c = $("#resultado"); c.hidden = false; c.replaceChildren();
-  c.appendChild(el("div", r.mensaje, "t " + (r.mejor ? "ok" : "mal")));
-  if (r.mejor) { c.appendChild(listaRuta(r.mejor.camino)); c.appendChild(el("div", `${r.mejor.costo} min · ${r.mejor.tramos} tramo(s)`, "ayuda")); }
-  if (r.opciones.length) {
-    c.appendChild(el("div", "Comparación de bases", "ayuda"));
-    const u = el("ul", null, "chips");
-    r.opciones.forEach(o => {
-      const tec = o.tecnicos_disponibles.map(t => t.nombre).join(", ") || "sin técnicos disponibles";
-      const ok = o.alcanzable && o.tecnicos_disponibles.length;
-      u.appendChild(el("li", o.alcanzable ? `${o.base} · ${o.costo} min · ${tec}` : `${o.base} · no llega`, "chip " + (ok ? "ok" : "mal")));
-    });
-    c.appendChild(u);
-  }
-  if (r.mejor) trazaDijkstra(c, r.mejor.traza, `Ver paso a paso del cálculo desde ${r.mejor.base} (Dijkstra)`);
+function vistaCosto(r) {
+  const c = h("div");
+  if (!r.alcanzable) { c.append(veredicto(false, `No hay ruta de ${nombre(r.origen)} a ${nombre(r.zona)}`, r.mensaje), trazaDijkstra(r.traza)); return c; }
+  const b = r.comparacion_bfs, mas = r.menos_tramos_es_mas_caro;
+  c.append(veredicto(true, `Ruta más rápida: ${fmt(r.costo)} min`, r.mensaje));
+  const mejor = h("div", "opcion mejor", h("h4", null, "Menor costo", h("span", "etiqueta", "Recomendada")), h("div", "grande", fmt(r.costo) + " min"),
+    h("span", "ayuda", `${r.tramos} ${r.tramos === 1 ? "tramo" : "tramos"}`), ruta(r.camino));
+  c.append(h("div", "compara", mejor, mas ? h("div", "opcion", h("h4", null, "Menos tramos", h("span", "etiqueta mal", `+${fmt(b.diferencia)} min`)),
+    h("div", "grande", fmt(b.costo) + " min"), h("span", "ayuda", `${b.tramos} ${b.tramos === 1 ? "tramo" : "tramos"}`), ruta(b.camino)) : null));
+  if (!mas) c.append(h("p", "ayuda", "Es también la ruta con menos tramos."));
+  c.append(trazaDijkstra(r.traza)); return c;
 }
-$("#btn-costo").addEventListener("click", async () => {
-  const f = $("#form-cobertura"), origen = f.origen.value.trim().toUpperCase(), zona = f.zona.value.trim().toUpperCase();
-  if (!origen || !zona) { mensaje("Indique el origen y la zona para calcular el menor costo.", "error"); return; }
+function bloqueAsignar(zona) {
+  const tol = h("input"); tol.type = "number"; tol.min = "0"; tol.step = "1"; tol.value = "10"; tol.id = "tolerancia";
+  const boton = accion("Asignar técnico a esta zona", () => conCarga("#btn-asignar", "Asignando…", () => asignarZona(zona, tol.value)), "");
+  boton.id = "btn-asignar";
+  return h("div", "asignar", h("label", null, "Diferencia máxima de tiempo (min)", tol), boton,
+    h("p", "ayuda", "Para repartir el trabajo, el sistema elige al técnico con menos servicios entre los que llegan a menos de esa cantidad de minutos del más rápido."));
+}
+function vistaAsignacion(r) {
+  const s = r.servicio, c = h("div");
+  c.append(veredicto(true, `${s.tecnico_nombre} atenderá ${nombre(s.zona)}`, r.mensaje),
+    h("div", "cifras", cifra(fmt(s.minutos), "minutos de ruta", true), cifra(s.tramos, s.tramos === 1 ? "tramo" : "tramos"), cifra(s.id, "servicio")), ruta(s.camino),
+    h("p", "sub", "Por qué se eligió a este técnico"),
+    tabla(["Técnico", "Base", "Tiempo", "Servicios previos", "Resultado"],
+      r.candidatos.map(x => [x.nombre, x.base, fmt(x.minutos) + " min", x.servicios_previos, x.estado]),
+      {fila: i => r.candidatos[i].estado === "Asignado" ? "destacada" : "", celda: (i, j) => j === 4 ? (r.candidatos[i].estado === "Asignado" ? "ok" : r.candidatos[i].estado.startsWith("Fuera") ? "mal" : "") : ""}));
+  if (puede("administrar")) c.append(h("div", "nota", "Siga el cumplimiento de esta ruta en ", accion("Seguimiento", () => { abrirPestana("t-aceptacion"); cargarSeguimiento(); })));
+  return c;
+}
+async function asignarZona(zona, tolerancia) {
   try {
-    const r = await llamarApi("GET", `/api/menor-costo?origen=${encodeURIComponent(origen)}&zona=${encodeURIComponent(zona)}`);
-    animar({...r, cubierta: r.alcanzable}, zona); mostrarCosto(r);
-  } catch (e) { mensaje(e.message, "error"); limpiarAnimacion(); }
-});
-$("#btn-mejor").addEventListener("click", async () => {
-  const zona = $("#form-cobertura").zona.value.trim().toUpperCase();
-  if (!zona) { mensaje("Indique la zona para saber qué técnico llega primero.", "error"); return; }
+    const r = await llamarApi("POST", "/api/servicios", {zona, tolerancia: Number(tolerancia)});
+    animar({traza: [], cubierta: true, camino: r.servicio.camino}, zona); mostrar(vistaAsignacion(r)); mensaje("Servicio asignado.", "ok");
+  } catch (e) { mostrar(veredicto(false, "No se pudo asignar el servicio", e.message)); }
+}
+function vistaMejor(r) {
+  const c = h("div"), m = r.mejor;
+  if (m) {
+    c.append(veredicto(true, `Recomendado: ${m.tecnicos_disponibles.map(t => t.nombre).join(", ")}, desde ${m.nombre}`, r.mensaje),
+      h("div", "cifras", cifra(fmt(m.costo), "minutos hasta la zona", true), cifra(m.tramos, m.tramos === 1 ? "tramo" : "tramos")), ruta(m.camino));
+    if (puede("configurar")) c.append(bloqueAsignar(r.zona));
+  } else c.append(veredicto(false, "Ninguna base puede atender esta zona ahora", r.mensaje));
+  if (r.opciones.length) {
+    const estado = o => m && o.base === m.base ? "Recomendada" : !o.alcanzable ? "No llega" : !o.tecnicos_disponibles.length ? "Sin técnicos disponibles" : "Más lenta";
+    c.append(h("p", "sub", "Comparación de bases"), tabla(["Base", "Tiempo", "Técnicos disponibles", "Estado"],
+      r.opciones.map(o => [`${o.nombre} (${o.base})`, o.alcanzable ? fmt(o.costo) + " min" : "—", o.tecnicos_disponibles.map(t => t.nombre).join(", ") || "ninguno", estado(o)]),
+      {fila: i => m && r.opciones[i].base === m.base ? "destacada" : "", celda: (i, j) => j === 3 ? (m && r.opciones[i].base === m.base ? "ok" : !r.opciones[i].alcanzable || !r.opciones[i].tecnicos_disponibles.length ? "mal" : "") : ""}));
+  }
+  if (m) c.append(trazaDijkstra(m.traza, `Ver paso a paso del cálculo desde ${m.nombre} (Dijkstra)`));
+  return c;
+}
+function mostrar(vista) { $("#resultado").replaceChildren(vista); }
+function mostrarError(texto) { mostrar(veredicto(false, "No se pudo completar la consulta", texto)); est = SIN_ANIMACION(); actualizarMapa(false); }
+
+/* ---------- Consultas ---------- */
+const entrada = () => { const f = $("#form-cobertura"); return [f.origen.value.trim().toUpperCase(), f.zona.value.trim().toUpperCase()]; };
+async function consultarCobertura() {
+  const [origen, zona] = entrada();
+  if (!origen) return mostrarError("Indique el origen: una base para ver su alcance o cualquier nodo para consultar una zona.");
+  try {
+    if (zona) { const r = await llamarApi("GET", `/api/cobertura?origen=${encodeURIComponent(origen)}&zona=${encodeURIComponent(zona)}`); animar(r, zona); mostrar(vistaCobertura(r)); }
+    else { const r = await llamarApi("GET", `/api/cobertura/alcance/${encodeURIComponent(origen)}`); animar(r, ""); mostrar(vistaAlcance(r)); }
+  } catch (e) { mostrarError(e.message); }
+}
+async function consultarCosto() {
+  const [origen, zona] = entrada();
+  if (!origen || !zona) return mostrarError("Indique el origen y la zona para calcular el menor costo.");
+  try { const r = await llamarApi("GET", `/api/menor-costo?origen=${encodeURIComponent(origen)}&zona=${encodeURIComponent(zona)}`); animar({...r, cubierta: r.alcanzable}, zona); mostrar(vistaCosto(r)); }
+  catch (e) { mostrarError(e.message); }
+}
+async function consultarMejor() {
+  const [, zona] = entrada();
+  if (!zona) return mostrarError("Indique la zona para saber qué técnico llega primero.");
   try {
     const r = await llamarApi("GET", `/api/menor-costo/mejor-base?zona=${encodeURIComponent(zona)}`);
     if (r.mejor) { $("#form-cobertura").origen.value = r.mejor.base; animar({traza: r.mejor.traza, cubierta: true, camino: r.mejor.camino}, zona); }
     else animar({traza: [], cubierta: false}, zona);
-    mostrarMejorBase(r);
-  } catch (e) { mensaje(e.message, "error"); limpiarAnimacion(); }
-});
-$("#form-cobertura").addEventListener("submit", async ev => {
-  ev.preventDefault(); const f = ev.target, origen = f.origen.value.trim().toUpperCase(), zona = f.zona.value.trim().toUpperCase();
+    mostrar(vistaMejor(r));
+  } catch (e) { mostrarError(e.message); }
+}
+function lanzar(tipo, origen, zona) {
+  const f = $("#form-cobertura"); f.origen.value = origen ?? f.origen.value; f.zona.value = zona ?? ""; abrirPestana("t-consultar");
+  ({cobertura: consultarCobertura, costo: consultarCosto, mejor: consultarMejor})[tipo]();
+}
+async function conCarga(selector, texto, fn) {   // evita dobles clics mientras se calcula
+  const b = $(selector), original = b.textContent; b.disabled = true; b.textContent = texto;
+  try { await fn(); } finally { b.disabled = false; b.textContent = original; }
+}
+$("#form-cobertura").addEventListener("submit", ev => { ev.preventDefault(); conCarga("#btn-cobertura", "Consultando…", consultarCobertura); });
+$("#btn-costo").addEventListener("click", () => conCarga("#btn-costo", "Calculando…", consultarCosto));
+$("#btn-mejor").addEventListener("click", () => conCarga("#btn-mejor", "Comparando…", consultarMejor));
+
+function mostrarInicio() {
+  est = SIN_ANIMACION();
+  if (!red.nodos.length) {
+    mostrar(puede("configurar")
+      ? h("div", "inicio", h("h3", null, "La red está vacía"), h("p", null, "Cargue la red de ejemplo para explorar la consola, o registre sus propios nodos y trayectos en «Configurar red»."),
+          accion("Cargar red de ejemplo", cargarEjemplo, ""))
+      : h("div", "inicio", h("h3", null, "La red aún no tiene datos"), h("p", null, "Pida a un configurador o a un administrador que registre la red. Cuando exista, podrá consultarla aquí.")));
+    return;
+  }
+  const ej = (texto, fn) => { const b = h("button", "chip", texto); b.type = "button"; b.addEventListener("click", fn); return b; };
+  mostrar(h("div", "inicio", h("h3", null, "Elija una consulta"), h("p", null, "Escriba un origen y una zona, haga clic en el mapa, o pruebe uno de estos ejemplos con la red de práctica:"),
+    h("div", "chips", ej("Cobertura de Aranjuez desde Base Norte", () => lanzar("cobertura", "B1", "Z3")), ej("Menor costo a Aranjuez", () => lanzar("costo", "B1", "Z3")),
+      ej("¿Quién llega primero a Robledo?", () => lanzar("mejor", "B1", "Z5")), ej("Alcance de Base Norte", () => lanzar("cobertura", "B1", "")),
+      ej("Zona inexistente", () => lanzar("cobertura", "B1", "Z99")), ej("Zona sin conexión", () => lanzar("cobertura", "B1", "Z7")))));
+}
+
+/* ---------- Pestañas ---------- */
+function abrirPestana(id) {
+  document.querySelectorAll(".pestanas button").forEach(b => { const ok = b.id === id; b.setAttribute("aria-selected", String(ok)); $("#" + b.getAttribute("aria-controls")).hidden = !ok; });
+}
+document.querySelectorAll(".pestanas button").forEach(b => b.addEventListener("click", () => { abrirPestana(b.id); if (b.id === "t-aceptacion") cargarSeguimiento(); }));
+
+/* ---------- Seguimiento: rutas asignadas, reportes de visita y revisión ---------- */
+const ETIQUETA_ESTADO = {ASIGNADO: ["En ruta", ""], POR_REVISAR: ["Por revisar", "aviso"], CUMPLIDO: ["Cumplida", "ok"], NO_CUMPLIDO: ["No cumplida", "mal"]};
+const TIPOS_NOVEDAD = [["TRAFICO", "Tráfico o vía cerrada"], ["CLIENTE_AUSENTE", "Cliente ausente"], ["ACCESO", "Sin acceso al lugar"], ["EQUIPO", "Falla de equipo o herramienta"], ["OTRO", "Otra novedad"]];
+const fechaLocal = iso => { const d = new Date(iso); return isNaN(d) ? "" : d.toLocaleString("es-CO", {dateStyle: "medium", timeStyle: "short"}); };
+const esTecnico = () => puede("reportar") && !puede("revisar");
+const resumenServicio = s => `${s.id} · ${s.zona_nombre} (${s.zona}) · ${s.tecnico_nombre} · ${s.camino.map(nombre).join(" → ")} · ${fmt(s.minutos)} min`;
+
+function tarjetaServicio(s) {
+  const [texto, clase] = ETIQUETA_ESTADO[s.estado], cuerpo = h("div", "srv-cuerpo");
+  if (s.reporte) {
+    cuerpo.append(h("p", null, h("b", null, "Reporte: "), s.reporte.texto));
+    if (s.reporte.novedad) cuerpo.append(h("p", null, h("span", "chip mal", "Novedad: " + s.reporte.novedad.tipo_nombre), " ", s.reporte.novedad.detalle));
+    cuerpo.append(h("p", "ayuda", `Enviado ${fechaLocal(s.reporte.fecha)}`));
+  } else cuerpo.append(h("p", "ayuda", esTecnico() ? "Aún no ha reportado esta visita." : "Aún sin reporte de visita."));
+  if (s.revision) cuerpo.append(h("p", null, h("b", null, "Revisión: "), `${s.estado === "CUMPLIDO" ? "se cumplió" : "no se cumplió"}, según ${s.revision.revisor}` + (s.revision.nota ? ` — ${s.revision.nota}` : ""),
+    h("span", "ayuda", ` (${fechaLocal(s.revision.fecha)})`)));
+  const acc = h("div", "srv-acc");
+  if (esTecnico() && (s.estado === "ASIGNADO" || s.estado === "POR_REVISAR")) acc.append(accion(s.reporte ? "Editar reporte" : "Reportar visita", () => abrirReporte(s), s.reporte ? "sec mini" : "mini"));
+  if (puede("revisar")) {
+    if (s.estado !== "CUMPLIDO") acc.append(accion("Se cumplió", () => abrirRevision(s, "CUMPLIDO"), s.estado === "POR_REVISAR" ? "mini" : "sec mini"));
+    if (s.estado !== "NO_CUMPLIDO") acc.append(accion("No se cumplió", () => abrirRevision(s, "NO_CUMPLIDO")));
+    if (s.estado === "CUMPLIDO" || s.estado === "NO_CUMPLIDO") acc.append(accion("Reabrir", () => reabrirServicio(s)));
+  }
+  return h("div", "srv" + (s.estado === "POR_REVISAR" ? " pendiente" : ""),
+    h("div", "srv-cab", h("b", null, `${s.id} · ${s.zona_nombre} (${s.zona})`), h("span", "chip " + clase, texto)),
+    h("p", "ayuda", `${s.tecnico_nombre} (${s.base}) · ${s.camino.map(nombre).join(" → ")} · ${fmt(s.minutos)} min`), cuerpo, acc.childNodes.length ? acc : null);
+}
+async function cargarSeguimiento() {
+  const c = $("#res-seguimiento");
   try {
-    const r = zona ? await llamarApi("GET", `/api/cobertura?origen=${encodeURIComponent(origen)}&zona=${encodeURIComponent(zona)}`)
-                   : await llamarApi("GET", `/api/cobertura/alcance/${encodeURIComponent(origen)}`);
-    animar(r, zona); mostrarResultado(r, zona);
-  } catch (e) { mensaje(e.message, "error"); $("#resultado").hidden = true; est = {visit: {}, camino: [], malos: {}, fin: 0}; }
+    const r = await llamarApi("GET", "/api/servicios"), t = r.total, caja = h("div");
+    caja.append(h("div", "cifras", cifra(t.asignados, "servicios asignados"), cifra(t.por_revisar, "por revisar", t.por_revisar > 0), cifra(t.en_ruta, "en ruta"),
+      cifra(t.cumplidos, "cumplidos"), cifra(t.no_cumplidos, "no cumplidos")));
+    if (!esTecnico()) {
+      caja.append(h("p", "sub", "Resumen por técnico"), tabla(["Técnico", "Base", "Estado", "Asignados", "Por revisar", "Cumplidos", "No cumplidos", "Novedades", "Cumplimiento"],
+        r.tecnicos.map(x => [x.nombre, x.base, h("span", "chip " + (x.disponible ? "ok" : "mal"), x.disponible ? "Disponible" : "No disponible"), x.asignados, x.por_revisar, x.cumplidos,
+          x.no_cumplidos, x.con_novedad, x.cumplimiento == null ? "—" : x.cumplimiento + " %"])));
+    }
+    if (!r.servicios.length) {
+      caja.append(h("div", "inicio", h("h3", null, esTecnico() ? "Aún no tiene rutas asignadas" : "Aún no hay servicios asignados"),
+        h("p", null, esTecnico() ? "Cuando le asignen un servicio lo verá aquí y podrá reportar la visita y cualquier novedad."
+          : "En «Consultar», elija una zona, pulse «¿Qué técnico llega primero?» y luego «Asignar técnico a esta zona». Aquí verá la ruta de cada técnico, su reporte y si se cumplió."),
+        puede("configurar") ? accion("Ir a Consultar", () => abrirPestana("t-consultar"), "") : null));
+    } else {
+      const orden = [...r.servicios].sort((a, b) => (a.estado === "POR_REVISAR" ? 0 : 1) - (b.estado === "POR_REVISAR" ? 0 : 1) || a.id.localeCompare(b.id, "es", {numeric: true}));
+      caja.append(h("p", "sub", esTecnico() ? "Mis rutas" : "Rutas asignadas (primero las que esperan revisión)"), ...orden.map(tarjetaServicio));
+    }
+    c.replaceChildren(caja);
+  } catch (e) { c.replaceChildren(veredicto(false, "No se pudo cargar el seguimiento", e.message)); }
+}
+
+/* Reporte de la visita (técnico) */
+const dlgReporte = $("#dlg-reporte"), formReporte = $("#form-reporte");
+formReporte.tipo.replaceChildren(...TIPOS_NOVEDAD.map(([v, t]) => { const o = h("option", null, t); o.value = v; return o; }));
+const alternarNovedad = () => { $("#rep-novedad").hidden = !formReporte.hay_novedad.checked; };
+formReporte.hay_novedad.addEventListener("change", alternarNovedad);
+let servicioEnCurso = null;
+function abrirReporte(s) {
+  servicioEnCurso = s; formReporte.reset(); $("#rep-error").hidden = true;
+  $("#rep-resumen").textContent = resumenServicio(s);
+  if (s.reporte) {
+    formReporte.texto.value = s.reporte.texto; formReporte.hay_novedad.checked = !!s.reporte.novedad;
+    if (s.reporte.novedad) { formReporte.tipo.value = s.reporte.novedad.tipo; formReporte.detalle.value = s.reporte.novedad.detalle; }
+  }
+  alternarNovedad(); dlgReporte.showModal(); formReporte.texto.focus();
+}
+formReporte.addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const f = formReporte, cuerpo = {texto: f.texto.value, novedad: f.hay_novedad.checked ? {tipo: f.tipo.value, detalle: f.detalle.value} : null};
+  try {
+    await llamarApi("POST", `/api/servicios/${encodeURIComponent(servicioEnCurso.id)}/reporte`, cuerpo);
+    dlgReporte.close(); mensaje("Reporte enviado. Quedó por revisar.", "ok"); await cargarSeguimiento();
+  } catch (e) { $("#rep-error").textContent = e.message; $("#rep-error").hidden = false; }
 });
 
-/* ---------- Datos y formularios (misma lógica de antes) ---------- */
+/* Revisión (administrador o configurador) */
+const dlgRevision = $("#dlg-revision"), formRevision = $("#form-revision");
+let decision = null;
+function abrirRevision(s, estado) {
+  servicioEnCurso = s; decision = estado; formRevision.reset(); $("#rev-error").hidden = true;
+  $("#rev-titulo").textContent = estado === "CUMPLIDO" ? "Confirmar que se cumplió" : "Marcar como no cumplido";
+  $("#rev-ok").textContent = estado === "CUMPLIDO" ? "Confirmar cumplimiento" : "Marcar no cumplido";
+  $("#rev-resumen").textContent = resumenServicio(s) + (s.reporte ? ` · Reporte: «${s.reporte.texto}»` + (s.reporte.novedad ? ` · Novedad: ${s.reporte.novedad.tipo_nombre}` : "") : " · Sin reporte de visita");
+  formRevision.nota.value = s.revision ? s.revision.nota : ""; dlgRevision.showModal(); formRevision.nota.focus();
+}
+formRevision.addEventListener("submit", async ev => {
+  ev.preventDefault();
+  try {
+    await llamarApi("PATCH", `/api/servicios/${encodeURIComponent(servicioEnCurso.id)}`, {estado: decision, nota: formRevision.nota.value});
+    dlgRevision.close(); mensaje("Revisión guardada.", "ok"); await cargarSeguimiento();
+  } catch (e) { $("#rev-error").textContent = e.message; $("#rev-error").hidden = false; }
+});
+async function reabrirServicio(s) {
+  try { await llamarApi("PATCH", `/api/servicios/${encodeURIComponent(s.id)}`, {estado: "ASIGNADO"}); mensaje(`${s.id} reabierto.`, "ok"); await cargarSeguimiento(); }
+  catch (e) { mensaje(e.message, "error"); }
+}
+document.querySelectorAll("dialog [data-cerrar]").forEach(b => b.addEventListener("click", () => b.closest("dialog").close()));
+$("#btn-reiniciar-serv").addEventListener("click", async () => {
+  if (!await confirmar("¿Reiniciar los servicios?", "Se borrarán los servicios asignados, sus reportes y su historial de revisión. Los técnicos y la red no cambian.", "Reiniciar")) return;
+  try { const r = await llamarApi("DELETE", "/api/servicios"); mensaje(r.mensaje, "ok"); await cargarSeguimiento(); } catch (e) { mensaje(e.message, "error"); }
+});
+
+/* ---------- Aceptación (F4) ---------- */
+$("#btn-aceptacion").addEventListener("click", async () => {
+  const c = $("#res-aceptacion"); c.replaceChildren(h("p", "ayuda", "Verificando el sistema…"));
+  try {
+    const r = await llamarApi("GET", "/api/aceptacion"), caja = h("div");
+    caja.append(h("div", null, veredicto(r.todos_cumplidos, r.todos_cumplidos ? "Todo funciona como se espera" : `${r.cumplidos} de ${r.total} comprobaciones superadas`, `${r.cumplidos} de ${r.total} comprobaciones superadas. Se usó una copia de la red de ejemplo; su red no cambió.`)));
+    r.escenarios.forEach(e => {
+      const d = h("details", "escenario " + (e.cumple ? "ok" : "mal"), h("summary", null, ico(e.cumple ? "ok" : "mal"), e.nombre), h("p", null, e.descripcion),
+        tabla(["Qué se hizo", "Qué debía pasar", "Qué pasó", "Código", ""], e.pasos.map(p => [p.accion, p.esperado, p.obtenido, p.codigo_http, p.cumple ? "✔" : "✖"]),
+          {celda: (i, j) => j === 4 ? (e.pasos[i].cumple ? "ok" : "mal") : ""}));
+      d.open = true; caja.append(d);
+    });
+    c.replaceChildren(caja);
+  } catch (e) { c.replaceChildren(veredicto(false, "No se pudo ejecutar la verificación", e.message)); }
+});
+
+/* ---------- Datos y formularios ---------- */
 async function refrescar() {
   red = await llamarApi("GET", "/api/red");
-  llenarTabla("tabla-nodos", ["ID", "Nombre", "Tipo"], red.nodos.map(n => [n.id, n.nombre, n.tipo]));
-  llenarTabla("tabla-tecnicos", ["ID", "Nombre", "Base", "Disponible"], red.tecnicos.map(t => [t.id, t.nombre, t.base_id, t.disponible ? "Sí" : "No"]));
-  llenarTabla("tabla-trayectos", ["Origen", "Destino", "Minutos"], red.trayectos.map(t => [t.origen, t.destino, t.minutos]));
+  const enlaces = calcularEnlaces(), filasEnlace = [];
+  enlaces.forEach(e => {
+    const par = `${nombre(e.a)} (${e.a})`, otro = `${nombre(e.b)} (${e.b})`;
+    if (e.ab != null && e.ab === e.ba) filasEnlace.push([`${par} ⇄ ${otro}`, fmt(e.ab), "Ambos sentidos"]);
+    else { if (e.ab != null) filasEnlace.push([`${par} → ${otro}`, fmt(e.ab), "Un solo sentido"]); if (e.ba != null) filasEnlace.push([`${otro} → ${par}`, fmt(e.ba), "Un solo sentido"]); }
+  });
+  llenarTabla("tabla-nodos", ["Código", "Nombre", "Tipo", "Ubicación"], red.nodos.map(n => [n.id, n.nombre, n.tipo === "BASE" ? "Base" : "Zona", n.latitud != null ? `${n.latitud}, ${n.longitud}` : "—"]));
+  llenarTabla("tabla-tecnicos", ["Código", "Nombre", "Base", "Estado", ""], red.tecnicos.map(t => [t.id, t.nombre, t.base_id,
+    h("span", "chip " + (t.disponible ? "ok" : "mal"), t.disponible ? "Disponible" : "No disponible"),
+    accion(t.disponible ? "Marcar no disponible" : "Marcar disponible", () => cambiarDisponibilidad(t))]));
+  llenarTabla("tabla-trayectos", ["Conexión", "Minutos", "Sentido"], filasEnlace);
   $("#k-bases").textContent = red.nodos.filter(n => n.tipo === "BASE").length;
   $("#k-zonas").textContent = red.nodos.filter(n => n.tipo === "ZONA").length;
   $("#k-tec").textContent = red.tecnicos.filter(t => t.disponible).length;
-  $("#k-tray").textContent = red.trayectos.length;
-  est = {visit: {}, camino: [], malos: {}, fin: 0}; $("#resultado").hidden = true; disponer();
+  $("#k-tray").textContent = enlaces.length;
+  disponer(); mostrarInicio(); cargarSeguimiento();
+  const hayUbicaciones = conUbicacion().length > 0;
+  $("#vista-mapa").disabled = !hayUbicaciones;
+  $("#vista-mapa").title = hayUbicaciones ? "" : "Registre latitud y longitud en los nodos para ver el mapa de Medellín.";
+  fijarVista(vistaInicial());
+}
+async function cambiarDisponibilidad(t) {
+  try {
+    await llamarApi("PATCH", `/api/tecnicos/${encodeURIComponent(t.id)}`, {disponible: !t.disponible});
+    mensaje(`${t.nombre} ahora está ${t.disponible ? "no disponible" : "disponible"}.`, "ok"); await refrescar();
+  } catch (e) { mensaje(e.message, "error"); }
 }
 function conectar(id, url, convertir) {
   $("#" + id).addEventListener("submit", async ev => {
@@ -381,12 +996,65 @@ function conectar(id, url, convertir) {
     catch (e) { mensaje(e.message, "error"); }
   });
 }
-conectar("form-nodo", "/api/nodos", f => ({id: f.id.value, nombre: f.nombre.value, tipo: f.tipo.value}));
+const grados = campo => campo.value.trim() === "" ? null : Number(campo.value);
+conectar("form-nodo", "/api/nodos", f => ({id: f.id.value, nombre: f.nombre.value, tipo: f.tipo.value, latitud: grados(f.latitud), longitud: grados(f.longitud)}));
 conectar("form-tecnico", "/api/tecnicos", f => ({id: f.id.value, nombre: f.nombre.value, base_id: f.base_id.value, disponible: f.disponible.checked}));
 conectar("form-trayecto", "/api/trayectos", f => ({origen: f.origen.value, destino: f.destino.value, minutos: Number(f.minutos.value), bidireccional: f.bidireccional.checked}));
-async function cargarEjemplo() { const r = await llamarApi("POST", "/api/red/ejemplo"); mensaje(r.mensaje, "ok"); await refrescar(); }
-async function vaciarRed() { const r = await llamarApi("DELETE", "/api/red"); mensaje(r.mensaje, "ok"); await refrescar(); }
-refrescar();
+function confirmar(titulo, texto, etiqueta) {   // diálogo modal: foco en «Cancelar», Esc cancela
+  const d = $("#dlg-confirmar");
+  $("#dlg-titulo").textContent = titulo; $("#dlg-texto").textContent = texto; $("#dlg-ok").textContent = etiqueta;
+  return new Promise(res => { d.addEventListener("close", () => res(d.returnValue === "ok"), {once: true}); d.returnValue = ""; d.showModal(); });
+}
+async function cargarEjemplo() {
+  if (red.nodos.length && !await confirmar("¿Reemplazar la red actual?", "La red de ejemplo sustituirá los nodos, técnicos y trayectos que hay cargados.", "Cargar ejemplo")) return;
+  try { const r = await llamarApi("POST", "/api/red/ejemplo"); mensaje(r.mensaje, "ok"); await refrescar(); } catch (e) { mensaje(e.message, "error"); }
+}
+async function vaciarRed() {
+  if (!await confirmar("¿Vaciar la red?", "Se borrarán todos los nodos, técnicos y trayectos. Esta acción no se puede deshacer.", "Vaciar red")) return;
+  try { const r = await llamarApi("DELETE", "/api/red"); mensaje(r.mensaje, "ok"); await refrescar(); } catch (e) { mensaje(e.message, "error"); }
+}
+$("#btn-ejemplo").onclick = cargarEjemplo; $("#btn-vaciar").onclick = vaciarRed;
+
+/* ---------- Sesión y permisos: la interfaz muestra solo lo que el rol permite (la API lo exige igualmente) ---------- */
+let sesion = null;
+const puede = permiso => !!sesion && sesion.permisos.includes(permiso);
+const QUE_PUEDE = [["consultar", "Consultar la red, el mapa y los resultados"], ["reportar", "Ver sus rutas y reportar sus visitas y novedades"],
+  ["configurar", "Registrar nodos, técnicos y trayectos, cambiar la disponibilidad y asignar servicios"], ["revisar", "Revisar los reportes y decidir si se cumplió"],
+  ["administrar", "Vaciar la red y verificar el sistema"]];
+const DESCRIPCION_ROL = {administrador: "Acceso completo.", configurador: "Consulta y configura la red.", tecnico: "Consulta la red, ve sus rutas y reporta sus visitas."};
+function aplicarRol() {
+  $("#u-avatar").textContent = sesion.rol_nombre[0];
+  $("#u-rol").textContent = sesion.rol_nombre; $("#u-nombre").textContent = "@" + sesion.usuario;
+  $("#m-rol").textContent = sesion.rol_nombre; $("#m-desc").textContent = DESCRIPCION_ROL[sesion.rol] || "";
+  $("#m-permisos").replaceChildren(...QUE_PUEDE.map(([p, t]) => h("li", puede(p) ? "si" : "no", t)));
+  $("#t-configurar").hidden = !puede("configurar");
+  $("#btn-vaciar").hidden = !puede("administrar");
+  $("#btn-reiniciar-serv").hidden = !puede("administrar");
+  $("#tarjeta-verif").hidden = !puede("administrar");
+  $("#aviso-consulta").hidden = puede("configurar");
+  if (esTecnico()) {
+    $("#aviso-consulta").replaceChildren(h("b", null, "Perfil técnico. "), "Puede consultar la red y, en «Seguimiento», ver sus rutas y reportar sus visitas.");
+    $("#seg-titulo").textContent = "Mis rutas";
+    $("#seg-ayuda").textContent = "Sus servicios asignados. Reporte cada visita y cualquier novedad; quien revisa decide si se cumplió.";
+  }
+}
+function alternarMenu(abrir) {
+  const ab = abrir ?? $("#menu-panel").hidden;
+  $("#menu-panel").hidden = !ab; $("#menu-usuario").setAttribute("aria-expanded", String(ab));
+}
+$("#menu-usuario").addEventListener("click", () => alternarMenu());
+document.addEventListener("click", ev => { if (!ev.target.closest(".usuario")) alternarMenu(false); });
+addEventListener("keydown", ev => { if (ev.key === "Escape") alternarMenu(false); });
+$("#btn-salir").addEventListener("click", async () => {
+  try { await llamarApi("DELETE", "/api/sesion"); } catch { /* si ya expiró, igual se vuelve al acceso */ }
+  location.href = "/acceso?motivo=salida";
+});
+async function arrancar() {
+  try { sesion = await llamarApi("GET", "/api/sesion"); }
+  catch { location.href = "/acceso"; return; }
+  aplicarRol(); await refrescar();
+}
+arrancar();
 </script>
 </body>
 </html>

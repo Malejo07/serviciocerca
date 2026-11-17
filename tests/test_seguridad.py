@@ -220,3 +220,14 @@ def test_la_pagina_de_acceso_es_publica_y_no_usa_fuentes_externas():
 def test_quien_ya_inicio_sesion_no_ve_la_pagina_de_acceso():
     r = cliente_como("tecnico").get("/acceso", follow_redirects=False)
     assert r.status_code == 303 and r.headers["location"] == "/consola"
+
+
+def test_la_consola_trae_el_menu_de_usuario_y_la_confirmacion():
+    r = cliente_como("tecnico").get("/consola")
+    assert r.status_code == 200
+    for ancla in ("menu-usuario", "btn-salir", "dlg-confirmar", "aviso-consulta"):
+        assert f'id="{ancla}"' in r.text
+
+
+def test_la_landing_sigue_siendo_publica():
+    assert TestClient(crear_app()).get("/").status_code == 200

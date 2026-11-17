@@ -1,4 +1,4 @@
-"""Pruebas de la API de la F4: aceptación demostrable."""
+"""Pruebas de la API y las páginas de la F4: landing, consola y aceptación."""
 import pytest
 from tests.utilidades import cliente_como
 
@@ -6,6 +6,38 @@ from tests.utilidades import cliente_como
 @pytest.fixture
 def cliente():
     return cliente_como("admin")
+
+
+# ---------- Páginas ----------
+
+def test_la_raiz_es_la_landing_y_enlaza_a_la_consola(cliente):
+    r = cliente.get("/")
+    assert r.status_code == 200 and "text/html" in r.headers["content-type"]
+    assert "ServicioCerca" in r.text
+    assert 'href="/consola"' in r.text
+
+
+def test_la_consola_integra_configuracion_cobertura_costo_y_aceptacion(cliente):
+    r = cliente.get("/consola")
+    assert r.status_code == 200 and "text/html" in r.headers["content-type"]
+    assert "Consola de operación" in r.text
+    for ancla in ("form-cobertura", "btn-costo", "btn-mejor", "form-nodo", "form-tecnico", "form-trayecto",
+                  "btn-aceptacion", "btn-ampliar-mapa"):
+        assert f'id="{ancla}"' in r.text
+
+
+def test_las_paginas_no_dependen_de_fuentes_externas(cliente):
+    for ruta in ("/", "/consola"):
+        assert "fonts.googleapis.com" not in cliente.get(ruta).text
+
+
+@pytest.mark.parametrize("archivo", [
+    "space-grotesk-500.woff2", "space-grotesk-700.woff2",
+    "ibm-plex-sans-400.woff2", "ibm-plex-sans-500.woff2", "ibm-plex-sans-600.woff2",
+])
+def test_las_tipografias_se_sirven_desde_el_proyecto(cliente, archivo):
+    r = cliente.get(f"/static/fonts/{archivo}")
+    assert r.status_code == 200 and len(r.content) > 5000
 
 
 # ---------- Aceptación por API ----------
