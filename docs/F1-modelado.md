@@ -69,22 +69,45 @@ Así se cumplen sin importar desde dónde se use la red: API, pruebas o algoritm
 
 ## 7. Red de ejemplo (`app/datos/red_ejemplo.json`)
 
+Once nodos (2 bases y 9 zonas de Medellín y Bello) y ocho trayectos adicionales entre ellos. Los tiempos son
+**aproximados, de hora pico, y sintéticos**; las ubicaciones también son aproximadas.
+
 ```
-        4          5             12 (solo ida)
-  B1 ------- Z1 ------- Z4 ---------------> Z5 ------- B2
-  | \                                       |    5
- 6|  \ 15                                  4|
-  |   \                                     |
-  Z2 --- Z3                                 Z6
-     7
-                    Z7 (aislada, sin trayectos)
+ Z1 Bello ──14── B1 Base Norte ──7── Z2 Castilla ──8── Z3 Aranjuez
+  │20                  └──────────── 20 (directo) ──────────┘
+ Z4 Manrique
+  │ 28 (solo ida)
+  ▼
+ Z5 Robledo ──18── B2 Base Sur
+  │  \               │
+  17   12             14
+  │      \            │
+ Z6 Candelaria       Z8 La América     (Z5 ──12── Z8, B2 ──14── Z8)
+  │7
+ Z9 Boston
+
+ Z7 Poblado: aislada, sin trayectos
 ```
 
-- **Técnicos:** Ana (B1, disponible), Luis (B1, no disponible), Marta (B2, disponible).
-- `Z4 -> Z5` es de **un solo sentido**: desde B1 se llega a Z5 y Z6, pero desde B2 no se llega a B1.
-- `Z7` está **aislada**. Servirá para probar "zona sin conexión" en F2.
-- `B1 -> Z3` directo cuesta 15 (1 tramo), pero `B1 -> Z2 -> Z3` cuesta 13 (2 tramos).
-  Servirá para el caso de F3 donde menos tramos no es lo mismo que menor costo.
+| Trayecto | Minutos | Sentido |
+|---|---|---|
+| Base Norte ↔ Bello | 14 | Ambos |
+| Base Norte ↔ Castilla | 7 | Ambos |
+| Base Norte ↔ Aranjuez (directo) | 20 | Ambos |
+| Castilla ↔ Aranjuez | 8 | Ambos |
+| Bello ↔ Manrique | 20 | Ambos |
+| Manrique → Robledo | 28 | **Solo ida** |
+| Base Sur ↔ Robledo | 18 | Ambos |
+| Robledo ↔ Candelaria | 17 | Ambos |
+| Robledo ↔ La América | 12 | Ambos |
+| Base Sur ↔ La América | 14 | Ambos |
+| Candelaria ↔ Boston | 7 | Ambos |
+
+- **Técnicos (4):** Ana (B1, disponible), Luis (B1, no disponible), Marta (B2, disponible), Carlos (B2, no disponible).
+- `Z4 -> Z5` es de **un solo sentido**: desde B1 se llega a Z5, Z6, Z8 y Z9, pero desde B2 no se llega al norte (B1 y Z1 a Z4).
+- `Z7` está **aislada**. Sirve para probar "zona sin conexión" en F2.
+- **Menos tramos no es menos tiempo:** `B1 -> Z3` directo cuesta 20 (1 tramo), porque cruza una zona muy congestionada,
+  pero `B1 -> Z2 -> Z3` cuesta 15 (7 + 8, 2 tramos). Es el caso de F3.
 
 ## 8. Cumplimiento de F1
 

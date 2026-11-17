@@ -10,6 +10,8 @@ class NodoEntrada(BaseModel):
     id: str = Field(examples=["Z1"])
     nombre: str = Field(examples=["Chapinero"])
     tipo: str = Field(examples=["ZONA"], description="BASE o ZONA")
+    latitud: float | None = Field(default=None, examples=[6.2442], description="Opcional; va junto con la longitud")
+    longitud: float | None = Field(default=None, examples=[-75.5812])
 
 
 class TecnicoEntrada(BaseModel):
@@ -30,6 +32,8 @@ class NodoSalida(BaseModel):
     id: str
     nombre: str
     tipo: str
+    latitud: float | None = None
+    longitud: float | None = None
 
 
 class TecnicoSalida(BaseModel):

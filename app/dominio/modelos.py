@@ -14,6 +14,8 @@ class Nodo:
     id: str
     nombre: str
     tipo: TipoNodo
+    latitud: float | None = None     # ubicación geográfica opcional (grados)
+    longitud: float | None = None
 
 
 @dataclass

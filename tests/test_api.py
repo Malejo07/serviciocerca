@@ -79,8 +79,8 @@ def test_campo_faltante_400(cliente):
 def test_cargar_ejemplo_y_vaciar(cliente):
     assert cliente.post("/api/red/ejemplo").status_code == 200
     red = cliente.get("/api/red").json()
-    assert len(red["nodos"]) == 9
-    assert len(red["tecnicos"]) == 3
+    assert len(red["nodos"]) == 11
+    assert len(red["tecnicos"]) == 4
 
     cliente.delete("/api/red")
     assert cliente.get("/api/red").json()["nodos"] == []

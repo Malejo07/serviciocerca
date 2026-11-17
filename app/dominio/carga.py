@@ -14,7 +14,7 @@ RUTA_EJEMPLO = Path(__file__).resolve().parent.parent / "datos" / "red_ejemplo.j
 def red_desde_dict(datos: dict) -> RedCobertura:
     red = RedCobertura()
     for n in datos.get("nodos", []):
-        red.agregar_nodo(n["id"], n["nombre"], n["tipo"])
+        red.agregar_nodo(n["id"], n["nombre"], n["tipo"], n.get("latitud"), n.get("longitud"))
     for t in datos.get("tecnicos", []):
         red.agregar_tecnico(t["id"], t["nombre"], t["base_id"], t.get("disponible", True))
     for tr in datos.get("trayectos", []):

@@ -1,28 +1,34 @@
 {
   "nodos": [
-    {"id": "B1", "nombre": "Base Norte", "tipo": "BASE"},
-    {"id": "B2", "nombre": "Base Sur", "tipo": "BASE"},
-    {"id": "Z1", "nombre": "Bello", "tipo": "ZONA"},
-    {"id": "Z2", "nombre": "Castilla", "tipo": "ZONA"},
-    {"id": "Z3", "nombre": "Aranjuez", "tipo": "ZONA"},
-    {"id": "Z4", "nombre": "Manrique", "tipo": "ZONA"},
-    {"id": "Z5", "nombre": "Robledo", "tipo": "ZONA"},
-    {"id": "Z6", "nombre": "Candelaria", "tipo": "ZONA"},
-    {"id": "Z7", "nombre": "Poblado", "tipo": "ZONA"}
+    {"id": "B1", "nombre": "Base Norte", "tipo": "BASE", "latitud": 6.2795, "longitud": -75.569},
+    {"id": "B2", "nombre": "Base Sur", "tipo": "BASE", "latitud": 6.233, "longitud": -75.588},
+    {"id": "Z1", "nombre": "Bello", "tipo": "ZONA", "latitud": 6.3373, "longitud": -75.5579},
+    {"id": "Z2", "nombre": "Castilla", "tipo": "ZONA", "latitud": 6.2917, "longitud": -75.5833},
+    {"id": "Z3", "nombre": "Aranjuez", "tipo": "ZONA", "latitud": 6.296, "longitud": -75.56},
+    {"id": "Z4", "nombre": "Manrique", "tipo": "ZONA", "latitud": 6.28, "longitud": -75.547},
+    {"id": "Z5", "nombre": "Robledo", "tipo": "ZONA", "latitud": 6.279, "longitud": -75.599},
+    {"id": "Z6", "nombre": "Candelaria", "tipo": "ZONA", "latitud": 6.2518, "longitud": -75.5636},
+    {"id": "Z7", "nombre": "Poblado", "tipo": "ZONA", "latitud": 6.2086, "longitud": -75.5703},
+    {"id": "Z8", "nombre": "La América", "tipo": "ZONA", "latitud": 6.2552, "longitud": -75.6086},
+    {"id": "Z9", "nombre": "Boston", "tipo": "ZONA", "latitud": 6.246, "longitud": -75.556}
   ],
   "tecnicos": [
     {"id": "T1", "nombre": "Ana", "base_id": "B1", "disponible": true},
     {"id": "T2", "nombre": "Luis", "base_id": "B1", "disponible": false},
-    {"id": "T3", "nombre": "Marta", "base_id": "B2", "disponible": true}
+    {"id": "T3", "nombre": "Marta", "base_id": "B2", "disponible": true},
+    {"id": "T4", "nombre": "Carlos", "base_id": "B2", "disponible": false}
   ],
   "trayectos": [
-    {"origen": "B1", "destino": "Z1", "minutos": 4, "bidireccional": true},
-    {"origen": "B1", "destino": "Z2", "minutos": 6, "bidireccional": true},
-    {"origen": "B1", "destino": "Z3", "minutos": 15, "bidireccional": true},
-    {"origen": "Z2", "destino": "Z3", "minutos": 7, "bidireccional": true},
-    {"origen": "Z1", "destino": "Z4", "minutos": 5, "bidireccional": true},
-    {"origen": "Z4", "destino": "Z5", "minutos": 12, "bidireccional": false},
-    {"origen": "B2", "destino": "Z5", "minutos": 5, "bidireccional": true},
-    {"origen": "Z5", "destino": "Z6", "minutos": 4, "bidireccional": true}
+    {"origen": "B1", "destino": "Z1", "minutos": 14, "bidireccional": true},
+    {"origen": "B1", "destino": "Z2", "minutos": 7, "bidireccional": true},
+    {"origen": "B1", "destino": "Z3", "minutos": 20, "bidireccional": true},
+    {"origen": "Z2", "destino": "Z3", "minutos": 8, "bidireccional": true},
+    {"origen": "Z1", "destino": "Z4", "minutos": 20, "bidireccional": true},
+    {"origen": "Z4", "destino": "Z5", "minutos": 28, "bidireccional": false},
+    {"origen": "B2", "destino": "Z5", "minutos": 18, "bidireccional": true},
+    {"origen": "Z5", "destino": "Z6", "minutos": 17, "bidireccional": true},
+    {"origen": "Z5", "destino": "Z8", "minutos": 12, "bidireccional": true},
+    {"origen": "B2", "destino": "Z8", "minutos": 14, "bidireccional": true},
+    {"origen": "Z6", "destino": "Z9", "minutos": 7, "bidireccional": true}
   ]
 }

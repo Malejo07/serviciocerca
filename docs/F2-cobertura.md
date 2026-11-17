@@ -70,9 +70,11 @@ Lista de adyacencia de la red de ejemplo:
 
 ```
 B1 -> Z1, Z2, Z3        Z4 -> Z1, Z5 (Z4->Z5 solo ida)
-Z1 -> B1, Z4            Z5 -> B2, Z6   (no vuelve a Z4)
-Z2 -> B1, Z3            B2 -> Z5
-Z3 -> B1, Z2            Z6 -> Z5
+Z1 -> B1, Z4            Z5 -> B2, Z6, Z8   (no vuelve a Z4)
+Z2 -> B1, Z3            B2 -> Z5, Z8
+Z3 -> B1, Z2            Z6 -> Z5, Z9
+                        Z8 -> Z5, B2
+                        Z9 -> Z6
                         Z7 -> (nada, aislada)
 ```
 
@@ -84,16 +86,18 @@ Z3 -> B1, Z2            Z6 -> Z5
 | 3 | Z2 | B1, Z3 | — | [Z3, Z4] | igual |
 | 4 | Z3 | B1, Z2 | — | [Z4] | igual |
 | 5 | Z4 | Z1, Z5 | Z5 | [Z5] | + Z5 |
-| 6 | Z5 | B2, Z6 | B2, Z6 | [B2, Z6] | + B2, Z6 |
-| 7 | B2 | Z5 | — | [Z6] | igual |
-| 8 | Z6 | Z5 | — | [] | fin |
+| 6 | Z5 | B2, Z6, Z8 | B2, Z6, Z8 | [B2, Z6, Z8] | + B2, Z6, Z8 |
+| 7 | B2 | Z5, Z8 | — | [Z6, Z8] | igual |
+| 8 | Z6 | Z5, Z9 | Z9 | [Z8, Z9] | + Z9 |
+| 9 | Z8 | Z5, B2 | — | [Z9] | igual |
+| 10 | Z9 | Z6 | — | [] | fin |
 
 **Resultado desde B1:**
-- Zonas alcanzables: Z1, Z2 y Z3 (1 tramo), Z4 (2), Z5 (3), Z6 (4).
+- Zonas alcanzables: Z1, Z2 y Z3 (1 tramo), Z4 (2), Z5 (3), Z6 y Z8 (4), Z9 (5).
 - **No alcanzable:** Z7, que está aislada.
 - Camino a Z5 (con `padre`): Z5 ← Z4 ← Z1 ← B1, es decir **B1 → Z1 → Z4 → Z5** (3 tramos).
-- Camino a Z3: **B1 → Z3** (1 tramo, 15 min). Existe **B1 → Z2 → Z3** (2 tramos, 13 min),
+- Camino a Z3: **B1 → Z3** (1 tramo, 20 min). Existe **B1 → Z2 → Z3** (2 tramos, 15 min),
   más barato. BFS no lo elige porque cuenta tramos, no minutos. Por eso hace falta la F3.
 
-**Desde B2** (efecto de la dirección): B2 → Z5 → Z6 y nada más. Como Z4 → Z5 es de solo
+**Desde B2** (efecto de la dirección): B2 llega a Z5 y Z8, y desde ahí a Z6 y Z9, y nada más. Como Z4 → Z5 es de solo
 ida, desde el sur no se llega al norte.

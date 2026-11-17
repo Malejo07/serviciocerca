@@ -53,7 +53,7 @@ def test_falta_parametro_400(cliente):
 def test_alcance_de_base(cliente):
     r = cliente.get("/api/cobertura/alcance/B2")
     assert r.status_code == 200
-    assert [z["id"] for z in r.json()["zonas_alcanzables"]] == ["Z5", "Z6"]
+    assert [z["id"] for z in r.json()["zonas_alcanzables"]] == ["Z5", "Z8", "Z6", "Z9"]
  
  
 def test_alcance_desde_zona_400(cliente):

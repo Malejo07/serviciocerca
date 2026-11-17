@@ -17,8 +17,8 @@ def test_menor_costo(cliente):
     assert r.status_code == 200
     datos = r.json()
     assert datos["alcanzable"] is True
-    assert datos["camino"] == ["B1", "Z2", "Z3"] and datos["costo"] == 13
-    assert datos["comparacion_bfs"]["costo"] == 15
+    assert datos["camino"] == ["B1", "Z2", "Z3"] and datos["costo"] == 15
+    assert datos["comparacion_bfs"]["costo"] == 20
     assert datos["traza"][0]["cola"] == [{"id": "B1", "costo": 0}]
 
 
@@ -47,7 +47,7 @@ def test_mejor_base(cliente):
     r = cliente.get("/api/menor-costo/mejor-base", params={"zona": "Z5"})
     assert r.status_code == 200
     datos = r.json()
-    assert datos["mejor"]["base"] == "B2" and datos["mejor"]["costo"] == 5
+    assert datos["mejor"]["base"] == "B2" and datos["mejor"]["costo"] == 18
     assert datos["mejor"]["traza"][0]["cola"] == [{"id": "B2", "costo": 0}]
     assert [o["base"] for o in datos["opciones"]] == ["B2", "B1"]
 

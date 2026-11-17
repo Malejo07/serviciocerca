@@ -54,13 +54,13 @@ contenido literal del heap, que puede tener entradas viejas que se descartan al 
 | Paso | Sale (costo) | Relajaciones (vecino: candidato) | Cola después |
 |------|--------------|----------------------------------|--------------|
 | 0 | inicio | — | B1:0 |
-| 1 | B1 (0) | Z1:4 ✔, Z2:6 ✔, Z3:15 ✔ | Z1:4, Z2:6, Z3:15 |
-| 2 | Z1 (4) | B1:8 ✘, Z4:9 ✔ | Z2:6, Z4:9, Z3:15 |
-| 3 | Z2 (6) | B1:12 ✘, Z3:**13** ✔ (mejora 15) | Z4:9, Z3:13 |
-| 4 | Z4 (9) | Z1:14 ✘, Z5:21 ✔ | Z3:13, Z5:21 |
-| 5 | **Z3 (13)** | destino: se detiene | Z5:21 |
+| 1 | B1 (0) | Z1:14 ✔, Z2:7 ✔, Z3:20 ✔ | Z2:7, Z1:14, Z3:20 |
+| 2 | Z2 (7) | B1:14 ✘, Z3:**15** ✔ (mejora 20) | Z1:14, Z3:15 |
+| 3 | Z1 (14) | B1:28 ✘, Z4:34 ✔ | Z3:15, Z4:34 |
+| 4 | **Z3 (15)** | destino: se detiene | Z4:34 |
 
-Camino: `Z3 ← Z2 ← B1` → **B1 → Z2 → Z3, 13 min, 2 tramos.** (✔ = mejora el costo conocido, ✘ = no lo mejora.)
+Camino: `Z3 ← Z2 ← B1` → **B1 → Z2 → Z3, 15 min, 2 tramos.** (✔ = mejora el costo conocido, ✘ = no lo mejora.)
+La ruta de menos tramos (B1 → Z3, 1 tramo) cuesta 20 min: **5 min más**.
 
 ## 5. Decisiones y casos especiales
 - **Origen** puede ser cualquier nodo; el **destino** debe ser una ZONA (igual que la F2).

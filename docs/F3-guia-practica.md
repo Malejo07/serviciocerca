@@ -23,10 +23,10 @@ Ofrece dos consultas:
 En la red de ejemplo, para ir de **B1 (Base Norte)** a **Z3 (Aranjuez)**:
 
 ```
-          15 min (directo)
+          20 min (directo, mucho tráfico)
    B1 ───────────────────── Z3
     │                       │
-  6 min                   7 min
+  7 min                   8 min
     │                       │
     └──────── Z2 ───────────┘
             Castilla
@@ -34,8 +34,8 @@ En la red de ejemplo, para ir de **B1 (Base Norte)** a **Z3 (Aranjuez)**:
 
 | Ruta | Tramos | Minutos | ¿Quién la elige? |
 |------|--------|---------|------------------|
-| B1 → Z3 | **1** | 15 | BFS (F2), que cuenta tramos |
-| B1 → Z2 → Z3 | 2 | **13** | Dijkstra (F3), que suma minutos |
+| B1 → Z3 | **1** | 20 | BFS (F2), que cuenta tramos |
+| B1 → Z2 → Z3 | 2 | **15** | Dijkstra (F3), que suma minutos |
 
 BFS (F2) es como contar **cuántas calles** se recorren. Dijkstra (F3) es como mirar **cuánto se demora** cada calle.
 
@@ -65,9 +65,9 @@ Para sacar siempre el de menor costo se usa un **montículo** (`heapq`), una est
 el mínimo de forma eficiente.
 
 ### ¿Por qué un nodo definitivo ya no puede mejorar?
-Porque **todos los tiempos son positivos**. Si Z2 sale con 6 minutos y es el menor pendiente,
-cualquier otro camino a Z2 pasaría por un nodo que ya cuesta 6 o más, y luego **sumaría** minutos.
-No puede quedar por debajo de 6.
+Porque **todos los tiempos son positivos**. Si Z2 sale con 7 minutos y es el menor pendiente,
+cualquier otro camino a Z2 pasaría por un nodo que ya cuesta 7 o más, y luego **sumaría** minutos.
+No puede quedar por debajo de 7.
 
 **¿Qué pasaría con pesos negativos?** Dijkstra fallaría. Ejemplo: A→B = 2, A→C = 5, C→B = −4.
 Dijkstra marca B como definitivo con 2, pero el camino real A→C→B cuesta 1.
@@ -82,13 +82,12 @@ Es la misma tabla que muestra la interfaz en *"Ver paso a paso del cálculo (Dij
 | Paso | Sale (costo) | Costos candidatos | Pendientes | Qué pasó |
 |------|--------------|-------------------|------------|----------|
 | 0 | inicio | — | B1:0 | B1 empieza con costo 0. |
-| 1 | B1 (0) | Z1:4 ✔, Z2:6 ✔, Z3:15 ✔ | Z1:4, Z2:6, Z3:15 | Se descubren los vecinos de B1. Z3 aparece con 15 por el camino directo. |
-| 2 | Z1 (4) | B1:8 ✘, Z4:9 ✔ | Z2:6, Z4:9, Z3:15 | Volver a B1 costaría 8, peor que 0 (✘). Se descubre Manrique con 9. |
-| 3 | Z2 (6) | B1:12 ✘, **Z3:13 ✔** | Z4:9, Z3:13 | **Momento clave:** por Castilla, Z3 cuesta 13, mejor que 15. Su padre pasa a ser Z2. |
-| 4 | Z4 (9) | Z1:14 ✘, Z5:21 ✔ | Z3:13, Z5:21 | Se descubre Robledo con 21. |
-| 5 | **Z3 (13)** | — | Z5:21 | Z3 es el menor pendiente: queda definitivo con 13 y **el algoritmo se detiene**. |
+| 1 | B1 (0) | Z1:14 ✔, Z2:7 ✔, Z3:20 ✔ | Z2:7, Z1:14, Z3:20 | Se descubren los vecinos de B1. Z3 aparece con 20 por el camino directo. |
+| 2 | Z2 (7) | B1:14 ✘, **Z3:15 ✔** | Z1:14, Z3:15 | **Momento clave:** por Castilla, Z3 cuesta 15, mejor que 20. Su padre pasa a ser Z2. Volver a B1 costaría 14, peor que 0 (✘). |
+| 3 | Z1 (14) | B1:28 ✘, Z4:34 ✔ | Z3:15, Z4:34 | Se descubre Manrique con 34. |
+| 4 | **Z3 (15)** | — | Z4:34 | Z3 es el menor pendiente: queda definitivo con 15 y **el algoritmo se detiene**. |
 
-**Reconstrucción:** padre de Z3 = Z2, padre de Z2 = B1. Al revés: **B1 → Z2 → Z3, 13 min.**
+**Reconstrucción:** padre de Z3 = Z2, padre de Z2 = B1. Al revés: **B1 → Z2 → Z3, 15 min.**
 
 La columna *Pendientes* muestra los costos candidatos de los nodos que todavía no son definitivos.
 
@@ -127,11 +126,11 @@ Puede escribir los IDs a mano o hacer **clic en el mapa**: una base llena "Orige
 
 | # | Origen | Zona | Botón | Resultado esperado | Qué aprende |
 |---|--------|------|-------|--------------------|-------------|
-| A1 | B1 | Z3 | Menor costo | 🟢 **13 min** por B1 → Z2 → Z3 (2 tramos). Aviso: la ruta de menos tramos (B1 → Z3) cuesta 15 min, **2 min más**. | Menos tramos ≠ menor costo. |
+| A1 | B1 | Z3 | Menor costo | 🟢 **15 min** por B1 → Z2 → Z3 (2 tramos). Aviso: la ruta de menos tramos (B1 → Z3) cuesta 20 min, **5 min más**. | Menos tramos ≠ menor costo. |
 | A2 | B1 | Z3 | Consultar cobertura | 🟢 B1 → Z3 en **1 tramo** | Compare con A1: BFS elige otra ruta. |
-| A3 | B1 | Z1 | Menor costo | 🟢 **4 min** por B1 → Z1. Sin aviso. | Cuando ambas rutas coinciden, no hay advertencia. |
-| A4 | B1 | Z5 | Menor costo | 🟢 **21 min** por B1 → Z1 → Z4 → Z5 (3 tramos) | Ruta de varios tramos. |
-| A5 | B2 | Z6 | Menor costo | 🟢 **9 min** por B2 → Z5 → Z6 | Desde la otra base. |
+| A3 | B1 | Z1 | Menor costo | 🟢 **14 min** por B1 → Z1. Sin aviso. | Cuando ambas rutas coinciden, no hay advertencia. |
+| A4 | B1 | Z5 | Menor costo | 🟢 **62 min** por B1 → Z1 → Z4 → Z5 (3 tramos) | Ruta de varios tramos. |
+| A5 | B2 | Z6 | Menor costo | 🟢 **35 min** por B2 → Z5 → Z6 | Desde la otra base. |
 | A6 | B2 | Z4 | Menor costo | 🔴 "no es alcanzable… red desconectada" | Z4 → Z5 es de solo ida: la dirección importa. |
 | A7 | B1 | Z7 | Menor costo | 🔴 "no tiene trayectos que lleguen a ella" | Zona aislada. |
 | A8 | B99 | Z1 | Menor costo | 🔴 "No existe el nodo 'B99'" | Origen inexistente. |
@@ -145,10 +144,10 @@ Solo escriba la **zona**. El origen se llena solo con la base ganadora.
 
 | # | Zona | Resultado esperado | Qué aprende |
 |---|------|--------------------|-------------|
-| B1 | Z5 | 🟢 **Marta desde B2, 5 min**. Comparación: B2 · 5 min · Marta / B1 · 21 min · Ana | Gana la base más rápida, no la primera de la lista. |
-| B2 | Z3 | 🟢 **Ana desde B1, 13 min** por B1 → Z2 → Z3. Comparación: B2 · no llega | Usa el menor costo; B2 no llega por la dirección. |
-| B3 | Z6 | 🟢 **Marta desde B2, 9 min** (B1 tardaría 25) | — |
-| B4 | Z1 | 🟢 **Ana desde B1, 4 min**. Luis no aparece. | Luis está en B1 pero **no disponible**. |
+| B1 | Z5 | 🟢 **Marta desde B2, 18 min**. Comparación: B2 · 18 min · Marta / B1 · 62 min · Ana | Gana la base más rápida, no la primera de la lista. |
+| B2 | Z3 | 🟢 **Ana desde B1, 15 min** por B1 → Z2 → Z3. Comparación: B2 · no llega | Usa el menor costo; B2 no llega por la dirección. |
+| B3 | Z6 | 🟢 **Marta desde B2, 35 min** (B1 tardaría 79) | — |
+| B4 | Z1 | 🟢 **Ana desde B1, 14 min**. Luis no aparece. | Luis está en B1 pero **no disponible**. |
 | B5 | Z7 | 🔴 "no tiene trayectos…" y ninguna base llega | Zona aislada. |
 | B6 | B1 | 🔴 "'B1' es una base; la zona solicitada debe ser una ZONA" | El destino debe ser una zona. |
 
@@ -158,24 +157,25 @@ Use el panel **Administrar la red** (abajo).
 
 **C1. Una base cercana sin técnicos**
 1. Registre el nodo `B3`, "Base Centro", tipo **Base**.
-2. Registre el técnico `T4`, "Pedro", base `B3`, con **Disponible desmarcado**.
+2. Registre el técnico `T5`, "Pedro", base `B3`, con **Disponible desmarcado**.
 3. Registre el trayecto `B3` → `Z3`, `2` minutos, ambos sentidos.
 4. Zona `Z3` → **¿Qué técnico llega primero?**
 
-Resultado esperado: 🟢 **Ana desde B1, 13 min**, con el aviso *"B3 llega en 2 min, pero no tiene técnicos disponibles"*.
+Resultado esperado: 🟢 **Ana desde B1, 15 min**, con el aviso *"B3 llega en 2 min, pero no tiene técnicos disponibles"*.
 En la comparación, **B3 · 2 min · sin técnicos disponibles** aparece en rojo.
 
 **C2. Ahora sí hay técnico**
-5. Registre el técnico `T5`, "Sofía", base `B3`, **Disponible marcado**.
+5. Registre el técnico `T6`, "Sofía", base `B3`, **Disponible marcado**.
 6. Repita la consulta para `Z3`.
 
 Resultado esperado: 🟢 **Sofía desde B3, 2 min**.
 
 **C3. Crear un atajo** (antes, presione *Cargar red de ejemplo* para volver a la red original)
-1. Registre el trayecto `Z1` → `Z3`, `1` minuto, ambos sentidos.
-2. Origen `B1`, zona `Z3` → **Menor costo**.
+1. Registre el trayecto `Z3` → `Z4` (Aranjuez a Manrique), `6` minutos, ambos sentidos.
+2. Origen `B1`, zona `Z4` → **Menor costo**.
 
-Resultado esperado: 🟢 **5 min** por B1 → Z1 → Z3, y la ruta directa de 15 min cuesta **10 min más**.
+Resultado esperado: 🟢 **21 min** por B1 → Z2 → Z3 → Z4 (3 tramos), y la ruta de menos tramos (B1 → Z1 → Z4, 2 tramos) cuesta 34 min, **13 min más**.
+Antes del atajo, la mejor ruta a Z4 era B1 → Z1 → Z4 con 34 min.
 Lo que se aprende: cambiar un solo trayecto puede cambiar toda la ruta óptima.
 
 **C4. Intentar un peso inválido**

@@ -56,7 +56,7 @@ def crear_app() -> FastAPI:
 
     @app.post("/api/nodos", status_code=201)
     def registrar_nodo(datos: NodoEntrada, red: RedCobertura = Depends(obtener_red)):
-        return asdict(red.agregar_nodo(datos.id, datos.nombre, datos.tipo))
+        return asdict(red.agregar_nodo(datos.id, datos.nombre, datos.tipo, datos.latitud, datos.longitud))
 
     @app.post("/api/tecnicos", status_code=201)
     def registrar_tecnico(datos: TecnicoEntrada, red: RedCobertura = Depends(obtener_red)):

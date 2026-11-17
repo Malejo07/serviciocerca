@@ -38,6 +38,25 @@ def validar_peso(peso) -> float:
     return float(peso)
 
 
+def _validar_grados(valor, nombre: str, limite: int) -> float:
+    if isinstance(valor, bool) or not isinstance(valor, (int, float)):
+        raise DatoInvalido(f"La {nombre} debe ser un número, se recibió '{valor}'.")
+    if math.isnan(valor) or math.isinf(valor):
+        raise DatoInvalido(f"La {nombre} debe ser un número finito.")
+    if abs(valor) > limite:
+        raise DatoInvalido(f"La {nombre} debe estar entre -{limite} y {limite}, se recibió {valor}.")
+    return float(valor)
+
+
+def validar_coordenadas(latitud, longitud):
+    """La ubicación es opcional, pero latitud y longitud van juntas."""
+    if latitud is None and longitud is None:
+        return None, None
+    if latitud is None or longitud is None:
+        raise DatoInvalido("Indique la latitud y la longitud juntas, o ninguna de las dos.")
+    return _validar_grados(latitud, "latitud", 90), _validar_grados(longitud, "longitud", 180)
+
+
 class RedCobertura:
     def __init__(self):
         self.nodos: dict[str, Nodo] = {}
@@ -46,7 +65,7 @@ class RedCobertura:
 
     # ---------- Nodos ----------
 
-    def agregar_nodo(self, id_nodo, nombre, tipo) -> Nodo:
+    def agregar_nodo(self, id_nodo, nombre, tipo, latitud=None, longitud=None) -> Nodo:
         id_nodo = normalizar_id(id_nodo)
         nombre = self._validar_nombre(nombre)
         try:
@@ -54,10 +73,12 @@ class RedCobertura:
         except ValueError:
             raise DatoInvalido(f"Tipo '{tipo}' inválido: debe ser BASE o ZONA.") from None
 
+        latitud, longitud = validar_coordenadas(latitud, longitud)
+
         if id_nodo in self.nodos:
             raise ElementoDuplicado(f"Ya existe un nodo con id '{id_nodo}'.")
 
-        nodo = Nodo(id=id_nodo, nombre=nombre, tipo=tipo)
+        nodo = Nodo(id=id_nodo, nombre=nombre, tipo=tipo, latitud=latitud, longitud=longitud)
         self.nodos[id_nodo] = nodo
         self._adyacencia[id_nodo] = {}
         return nodo

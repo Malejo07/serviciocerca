@@ -13,24 +13,24 @@ def red():
 
 
 def test_gana_la_base_mas_rapida(red):
-    # Robledo (Z5): desde B2 son 5 min; desde B1 son 21 min.
+    # Robledo (Z5): desde B2 son 18 min; desde B1 son 62 min (14 + 20 + 28).
     r = mejor_base(red, "Z5")
     assert r["mejor"]["base"] == "B2"
-    assert r["mejor"]["costo"] == 5
+    assert r["mejor"]["costo"] == 18
     assert r["mejor"]["camino"] == ["B2", "Z5"]
     assert [t["nombre"] for t in r["mejor"]["tecnicos_disponibles"]] == ["Marta"]
-    assert "Marta" in r["mensaje"] and "5 min" in r["mensaje"]
+    assert "Marta" in r["mensaje"] and "18 min" in r["mensaje"]
 
 
 def test_opciones_ordenadas_por_costo(red):
     r = mejor_base(red, "Z5")
-    assert [(o["base"], o["costo"]) for o in r["opciones"]] == [("B2", 5), ("B1", 21)]
+    assert [(o["base"], o["costo"]) for o in r["opciones"]] == [("B2", 18), ("B1", 62)]
 
 
 def test_base_que_no_llega_queda_al_final(red):
     # Aranjuez (Z3): B2 no llega porque Z4 -> Z5 es de solo ida.
     r = mejor_base(red, "Z3")
-    assert r["mejor"]["base"] == "B1" and r["mejor"]["costo"] == 13
+    assert r["mejor"]["base"] == "B1" and r["mejor"]["costo"] == 15
     assert r["mejor"]["camino"] == ["B1", "Z2", "Z3"]  # usa el menor costo, no el de menos tramos
     ultima = r["opciones"][-1]
     assert ultima["base"] == "B2" and ultima["alcanzable"] is False and ultima["costo"] is None
@@ -44,7 +44,7 @@ def test_solo_cuentan_tecnicos_disponibles(red):
 
 def test_base_cercana_sin_tecnicos_no_gana(red):
     red.agregar_nodo("B3", "Base Centro", "BASE")
-    red.agregar_tecnico("T4", "Pedro", "B3", disponible=False)
+    red.agregar_tecnico("T9", "Pedro", "B3", disponible=False)
     red.agregar_trayecto("B3", "Z3", 2)
     r = mejor_base(red, "Z3")
     assert r["mejor"]["base"] == "B1"  # B3 llega en 2 min, pero no tiene técnicos disponibles
@@ -71,10 +71,10 @@ def test_zona_sin_conexion(red):
 
 
 def test_ninguna_base_llega_red_desconectada(red):
-    # Z8 recibe un trayecto desde Poblado (Z7), pero ninguna base llega a Poblado.
-    red.agregar_nodo("Z8", "Envigado", "ZONA")
-    red.agregar_trayecto("Z7", "Z8", 6, bidireccional=False)
-    r = mejor_base(red, "Z8")
+    # Z10 recibe un trayecto desde Poblado (Z7), pero ninguna base llega a Poblado.
+    red.agregar_nodo("Z10", "Envigado", "ZONA")
+    red.agregar_trayecto("Z7", "Z10", 6, bidireccional=False)
+    r = mejor_base(red, "Z10")
     assert r["mejor"] is None
     assert "desconectada" in r["mensaje"]
 
