@@ -53,3 +53,8 @@ class RedSalida(BaseModel):
     nodos: list[NodoSalida]
     tecnicos: list[TecnicoSalida]
     trayectos: list[TrayectoSalida]
+
+
+class SesionEntrada(BaseModel):
+    usuario: str = Field(min_length=1, max_length=64)
+    clave: str = Field(min_length=1, max_length=128)   # el tope evita gastar el hash en claves enormes

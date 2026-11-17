@@ -1,14 +1,12 @@
 """Pruebas de la API: códigos HTTP y mensajes legibles."""
 import pytest
-from fastapi.testclient import TestClient
-
-from app.main import crear_app
+from tests.utilidades import cliente_como
 
 
 @pytest.fixture
 def cliente():
     # Cada prueba usa una app nueva con la red vacía: las pruebas no se afectan entre sí.
-    return TestClient(crear_app())
+    return cliente_como("admin")
 
 
 def registrar_basico(cliente):

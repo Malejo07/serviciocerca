@@ -1,13 +1,11 @@
 """Pruebas de la API de menor costo (F3)."""
 import pytest
-from fastapi.testclient import TestClient
-
-from app.main import crear_app
+from tests.utilidades import cliente_como
 
 
 @pytest.fixture
 def cliente():
-    c = TestClient(crear_app())
+    c = cliente_como("admin")
     c.post("/api/red/ejemplo")
     return c
 
