@@ -23,15 +23,17 @@ def test_traza_coincide_con_la_hecha_en_papel(red):
         ("Z2", [], ["Z3", "Z4"]),
         ("Z3", [], ["Z4"]),
         ("Z4", ["Z5"], ["Z5"]),
-        ("Z5", ["B2", "Z6"], ["B2", "Z6"]),
-        ("B2", [], ["Z6"]),
-        ("Z6", [], []),
+        ("Z5", ["B2", "Z6", "Z8"], ["B2", "Z6", "Z8"]),
+        ("B2", [], ["Z6", "Z8"]),
+        ("Z6", ["Z9"], ["Z8", "Z9"]),
+        ("Z8", [], ["Z9"]),
+        ("Z9", [], []),
     ]
 
 
 def test_bfs_calcula_tramos_por_nivel(red):
     tramos = bfs(red, "B1").tramos
-    assert tramos == {"B1": 0, "Z1": 1, "Z2": 1, "Z3": 1, "Z4": 2, "Z5": 3, "B2": 4, "Z6": 4}
+    assert tramos == {"B1": 0, "Z1": 1, "Z2": 1, "Z3": 1, "Z4": 2, "Z5": 3, "B2": 4, "Z6": 4, "Z8": 4, "Z9": 5}
 
 
 def test_reconstruir_camino_con_padres(red):
@@ -56,7 +58,7 @@ def test_zona_cubierta(red):
 
 
 def test_bfs_da_menos_tramos_no_menor_costo(red):
-    # B1->Z3 directo (15 min) gana por tramos aunque B1->Z2->Z3 cuesta 13 min. Eso lo resuelve la F3.
+    # B1->Z3 directo (20 min) gana por tramos aunque B1->Z2->Z3 cuesta 15 min. Eso lo resuelve la F3.
     r = consultar_cobertura(red, "B1", "Z3")
     assert r["camino"] == ["B1", "Z3"]
     assert r["tramos"] == 1
@@ -107,7 +109,7 @@ def test_zona_solicitada_no_puede_ser_base(red):
 def test_alcance_desde_base_norte(red):
     r = listar_alcance(red, "B1")
     assert [(z["id"], z["tramos"]) for z in r["zonas_alcanzables"]] == [
-        ("Z1", 1), ("Z2", 1), ("Z3", 1), ("Z4", 2), ("Z5", 3), ("Z6", 4),
+        ("Z1", 1), ("Z2", 1), ("Z3", 1), ("Z4", 2), ("Z5", 3), ("Z6", 4), ("Z8", 4), ("Z9", 5),
     ]
     assert r["zonas_no_alcanzables"] == ["Z7"]
     assert [t["id"] for t in r["tecnicos_disponibles"]] == ["T1"]  # Luis (T2) no está disponible
@@ -115,7 +117,7 @@ def test_alcance_desde_base_norte(red):
 
 def test_alcance_desde_base_sur_respeta_direccion(red):
     r = listar_alcance(red, "B2")
-    assert [z["id"] for z in r["zonas_alcanzables"]] == ["Z5", "Z6"]
+    assert [z["id"] for z in r["zonas_alcanzables"]] == ["Z5", "Z8", "Z6", "Z9"]
     assert r["zonas_no_alcanzables"] == ["Z1", "Z2", "Z3", "Z4", "Z7"]
 
 

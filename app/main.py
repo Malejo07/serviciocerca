@@ -4,24 +4,18 @@ from pathlib import Path
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 
+from app.dominio.aceptacion import ejecutar_aceptacion, generar_reporte_markdown
 from app.dominio.asignacion import mejor_base
 from app.dominio.carga import red_de_ejemplo
 from app.dominio.cobertura import consultar_cobertura, listar_alcance
 from app.dominio.costo import menor_costo
-from app.dominio.errores import DatoInvalido, ElementoDuplicado, ElementoNoEncontrado, ErrorRed
+from app.dominio.errores import CODIGOS_HTTP, ErrorRed
 from app.dominio.red import RedCobertura
 from app.esquemas import NodoEntrada, RedSalida, TecnicoEntrada, TrayectoEntrada
 
 CARPETA_STATIC = Path(__file__).resolve().parent / "static"
-
-CODIGOS_HTTP = {
-    DatoInvalido: 400,
-    ElementoNoEncontrado: 404,
-    ElementoDuplicado: 409,
-}
-
 
 def crear_app() -> FastAPI:
     app = FastAPI(title="ServicioCerca", description="Red de cobertura de técnicos")
@@ -56,7 +50,7 @@ def crear_app() -> FastAPI:
 
     @app.post("/api/nodos", status_code=201)
     def registrar_nodo(datos: NodoEntrada, red: RedCobertura = Depends(obtener_red)):
-        return asdict(red.agregar_nodo(datos.id, datos.nombre, datos.tipo))
+        return asdict(red.agregar_nodo(datos.id, datos.nombre, datos.tipo, datos.latitud, datos.longitud))
 
     @app.post("/api/tecnicos", status_code=201)
     def registrar_tecnico(datos: TecnicoEntrada, red: RedCobertura = Depends(obtener_red)):
@@ -100,6 +94,25 @@ def crear_app() -> FastAPI:
     def mejor_base_para_zona(zona: str, red: RedCobertura = Depends(obtener_red)):
         """Base con técnicos disponibles que llega antes a la zona (Dijkstra desde cada base)."""
         return mejor_base(red, zona)
+
+    # ---------- F4: aceptación demostrable ----------
+
+    @app.get("/api/aceptacion")
+    def aceptacion():
+        """Ejecuta los escenarios de éxito, zona inexistente, red desconectada y peso inválido.
+
+        Corre sobre una copia de la red de ejemplo: no modifica la red cargada, por eso es un GET.
+        """
+        return ejecutar_aceptacion()
+
+    @app.get("/api/aceptacion/evidencia")
+    def evidencia_de_aceptacion():
+        """Informe de la aceptación en Markdown, listo para descargar."""
+        return PlainTextResponse(
+            generar_reporte_markdown(ejecutar_aceptacion()),
+            media_type="text/markdown; charset=utf-8",
+            headers={"Content-Disposition": 'attachment; filename="evidencia-aceptacion-F4.md"'},
+        )
 
     # ---------- Interfaz mínima ----------
 

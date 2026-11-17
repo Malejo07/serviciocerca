@@ -23,36 +23,35 @@ def test_traza_coincide_con_la_hecha_en_papel(red):
               [(c["id"], c["costo"]) for c in p["cola"]]) for p in r["traza"]]
     assert pasos == [
         (None, None, [], [("B1", 0)]),
-        ("B1", 0, [("Z1", 4, True), ("Z2", 6, True), ("Z3", 15, True)], [("Z1", 4), ("Z2", 6), ("Z3", 15)]),
-        ("Z1", 4, [("B1", 8, False), ("Z4", 9, True)], [("Z2", 6), ("Z4", 9), ("Z3", 15)]),
-        ("Z2", 6, [("B1", 12, False), ("Z3", 13, True)], [("Z4", 9), ("Z3", 13)]),
-        ("Z4", 9, [("Z1", 14, False), ("Z5", 21, True)], [("Z3", 13), ("Z5", 21)]),
-        ("Z3", 13, [], [("Z5", 21)]),
+        ("B1", 0, [("Z1", 14, True), ("Z2", 7, True), ("Z3", 20, True)], [("Z2", 7), ("Z1", 14), ("Z3", 20)]),
+        ("Z2", 7, [("B1", 14, False), ("Z3", 15, True)], [("Z1", 14), ("Z3", 15)]),
+        ("Z1", 14, [("B1", 28, False), ("Z4", 34, True)], [("Z3", 15), ("Z4", 34)]),
+        ("Z3", 15, [], [("Z4", 34)]),
     ]
 
 
 def test_menos_tramos_no_es_menor_costo(red):
     r = menor_costo(red, "B1", "Z3")
     assert r["alcanzable"] is True
-    assert r["camino"] == ["B1", "Z2", "Z3"] and r["costo"] == 13 and r["tramos"] == 2
+    assert r["camino"] == ["B1", "Z2", "Z3"] and r["costo"] == 15 and r["tramos"] == 2
     bfs = r["comparacion_bfs"]
-    assert bfs["camino"] == ["B1", "Z3"] and bfs["tramos"] == 1 and bfs["costo"] == 15
-    assert bfs["diferencia"] == 2 and r["menos_tramos_es_mas_caro"] is True
+    assert bfs["camino"] == ["B1", "Z3"] and bfs["tramos"] == 1 and bfs["costo"] == 20
+    assert bfs["diferencia"] == 5 and r["menos_tramos_es_mas_caro"] is True
     assert consultar_cobertura(red, "B1", "Z3")["camino"] == bfs["camino"]  # es justo el camino que elige BFS
-    assert "2 min" in r["mensaje"] and "13" in r["mensaje"]
+    assert "5 min" in r["mensaje"] and "15" in r["mensaje"]
 
 
 def test_cuando_coinciden_no_hay_advertencia(red):
     r = menor_costo(red, "B1", "Z1")
-    assert r["camino"] == ["B1", "Z1"] and r["costo"] == 4
+    assert r["camino"] == ["B1", "Z1"] and r["costo"] == 14
     assert r["menos_tramos_es_mas_caro"] is False
 
 
 def test_ruta_de_varios_tramos(red):
     assert menor_costo(red, "B1", "Z5")["camino"] == ["B1", "Z1", "Z4", "Z5"]
-    assert menor_costo(red, "B1", "Z5")["costo"] == 21
+    assert menor_costo(red, "B1", "Z5")["costo"] == 62   # 14 + 20 + 28
     r = menor_costo(red, "B2", "Z6")
-    assert r["camino"] == ["B2", "Z5", "Z6"] and r["costo"] == 9
+    assert r["camino"] == ["B2", "Z5", "Z6"] and r["costo"] == 35   # 18 + 17
 
 
 def test_origen_igual_al_destino(red):

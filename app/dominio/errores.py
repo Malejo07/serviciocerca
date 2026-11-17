@@ -19,3 +19,11 @@ class ElementoDuplicado(ErrorRed):
 
 class ElementoNoEncontrado(ErrorRed):
     """Se hace referencia a un elemento que no está registrado."""
+
+
+# Código HTTP que la API devuelve para cada tipo de error (lo usan main.py y la aceptación de la F4).
+CODIGOS_HTTP = {
+    DatoInvalido: 400,
+    ElementoNoEncontrado: 404,
+    ElementoDuplicado: 409,
+}
