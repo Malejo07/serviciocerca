@@ -2,12 +2,11 @@
 import math
 
 import pytest
-from fastapi.testclient import TestClient
 
 from app.dominio.carga import red_de_ejemplo
 from app.dominio.errores import DatoInvalido
 from app.dominio.red import RedCobertura
-from app.main import crear_app
+from tests.utilidades import cliente_como
 
 
 # ---------- Dominio ----------
@@ -63,7 +62,7 @@ def test_la_red_de_ejemplo_esta_ubicada_en_el_valle_de_medellin():
 # ---------- API ----------
 
 def test_registrar_nodo_con_ubicacion_y_verla_en_la_red():
-    cliente = TestClient(crear_app())
+    cliente = cliente_como("admin")
     r = cliente.post("/api/nodos", json={"id": "Z1", "nombre": "Laureles", "tipo": "ZONA", "latitud": 6.2442, "longitud": -75.5900})
     assert r.status_code == 201 and r.json()["latitud"] == 6.2442
     nodo = cliente.get("/api/red").json()["nodos"][0]
@@ -71,14 +70,14 @@ def test_registrar_nodo_con_ubicacion_y_verla_en_la_red():
 
 
 def test_los_nodos_sin_ubicacion_devuelven_null():
-    cliente = TestClient(crear_app())
+    cliente = cliente_como("admin")
     cliente.post("/api/nodos", json={"id": "Z1", "nombre": "Laureles", "tipo": "ZONA"})
     nodo = cliente.get("/api/red").json()["nodos"][0]
     assert nodo["latitud"] is None and nodo["longitud"] is None
 
 
 def test_la_api_rechaza_ubicaciones_incompletas_o_invalidas():
-    cliente = TestClient(crear_app())
+    cliente = cliente_como("admin")
     r = cliente.post("/api/nodos", json={"id": "Z1", "nombre": "X", "tipo": "ZONA", "latitud": 6.2})
     assert r.status_code == 400 and "juntas" in r.json()["error"]
     r = cliente.post("/api/nodos", json={"id": "Z1", "nombre": "X", "tipo": "ZONA", "latitud": 95, "longitud": 0})
@@ -89,6 +88,6 @@ def test_la_api_rechaza_ubicaciones_incompletas_o_invalidas():
 
 
 def test_la_red_de_ejemplo_llega_con_ubicaciones_por_la_api():
-    cliente = TestClient(crear_app())
+    cliente = cliente_como("admin")
     cliente.post("/api/red/ejemplo")
     assert all(n["latitud"] is not None for n in cliente.get("/api/red").json()["nodos"])

@@ -9,7 +9,7 @@ import math
 import re
 
 from app.dominio.errores import DatoInvalido, ElementoDuplicado, ElementoNoEncontrado
-from app.dominio.modelos import Nodo, Tecnico, TipoNodo, Trayecto
+from app.dominio.modelos import Nodo, Servicio, Tecnico, TipoNodo, Trayecto
 
 PATRON_ID = re.compile(r"^[A-Z0-9_-]{1,30}$")
 
@@ -61,6 +61,7 @@ class RedCobertura:
     def __init__(self):
         self.nodos: dict[str, Nodo] = {}
         self.tecnicos: dict[str, Tecnico] = {}
+        self.servicios: dict[str, Servicio] = {}     # servicios asignados (ver asignacion.py)
         self._adyacencia: dict[str, dict[str, float]] = {}
 
     # ---------- Nodos ----------
@@ -102,6 +103,20 @@ class RedCobertura:
 
         tecnico = Tecnico(id=id_tecnico, nombre=nombre, base_id=base.id, disponible=bool(disponible))
         self.tecnicos[id_tecnico] = tecnico
+        return tecnico
+
+    def obtener_tecnico(self, id_tecnico) -> Tecnico:
+        id_tecnico = normalizar_id(id_tecnico)
+        if id_tecnico not in self.tecnicos:
+            raise ElementoNoEncontrado(f"No existe el técnico '{id_tecnico}'.")
+        return self.tecnicos[id_tecnico]
+
+    def cambiar_disponibilidad(self, id_tecnico, disponible) -> Tecnico:
+        """Activa o desactiva a un técnico sin borrarlo (conserva su historial de servicios)."""
+        if not isinstance(disponible, bool):
+            raise DatoInvalido("La disponibilidad debe ser verdadera o falsa.")
+        tecnico = self.obtener_tecnico(id_tecnico)
+        tecnico.disponible = disponible
         return tecnico
 
     # ---------- Trayectos (aristas) ----------

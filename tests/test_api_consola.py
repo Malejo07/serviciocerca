@@ -1,13 +1,11 @@
 """Pruebas de la API de la F4: aceptación demostrable."""
 import pytest
-from fastapi.testclient import TestClient
-
-from app.main import crear_app
+from tests.utilidades import cliente_como
 
 
 @pytest.fixture
 def cliente():
-    return TestClient(crear_app())
+    return cliente_como("admin")
 
 
 # ---------- Aceptación por API ----------

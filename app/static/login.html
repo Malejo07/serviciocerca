@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iniciar sesión · ServicioCerca</title>
+<style>
+@font-face{font-family:"Space Grotesk";font-weight:500;font-display:swap;src:url(/static/fonts/space-grotesk-500.woff2) format("woff2")}
+@font-face{font-family:"Space Grotesk";font-weight:700;font-display:swap;src:url(/static/fonts/space-grotesk-700.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Sans";font-weight:400;font-display:swap;src:url(/static/fonts/ibm-plex-sans-400.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Sans";font-weight:500;font-display:swap;src:url(/static/fonts/ibm-plex-sans-500.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Sans";font-weight:600;font-display:swap;src:url(/static/fonts/ibm-plex-sans-600.woff2) format("woff2")}
+:root{--noche:#070E1B;--panel:#0D1829;--panel2:#132238;--linea:#243857;--texto:#E8EFFA;--apagado:#A3B3CC;--base:#35E0FF;--ruta:#FFC857;--ok:#3DDC97;--mal:#FF6B81}
+*{box-sizing:border-box}
+html{color-scheme:dark}
+body{margin:0;min-height:100vh;background:var(--noche);color:var(--texto);font:16px/1.55 "IBM Plex Sans",system-ui,sans-serif}
+h1,h2{font-family:"Space Grotesk",system-ui,sans-serif;margin:0;font-weight:700;letter-spacing:-.02em;line-height:1.15}
+:focus-visible{outline:2px solid var(--ruta);outline-offset:2px}
+.pagina{display:grid;grid-template-columns:1.1fr 1fr;min-height:100vh}
+
+/* Columna de marca */
+.marca-col{position:relative;overflow:hidden;padding:40px 56px;display:flex;flex-direction:column;justify-content:space-between;background:radial-gradient(ellipse at 20% 10%,#12304F 0,#0A1627 55%,#070E1B 100%);border-right:1px solid var(--linea)}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;font:700 1.25rem "Space Grotesk",sans-serif;color:var(--texto)}
+.marca-col h1{font-size:clamp(2rem,3.4vw,2.9rem);max-width:12em;margin:0 0 16px}
+.marca-col h1 em{font-style:normal;color:var(--ruta)}
+.marca-col p{color:var(--apagado);max-width:30em;margin:0}
+.red{position:absolute;right:-30px;bottom:30px;width:78%;opacity:.55;pointer-events:none}
+.pie-marca{position:relative;color:var(--apagado);font-size:.85rem}
+.bloque{position:relative}
+
+/* Columna del formulario */
+.form-col{display:flex;align-items:center;justify-content:center;padding:32px 24px}
+.caja{width:100%;max-width:400px}
+.caja h2{font-size:1.9rem;margin-bottom:6px}
+.caja .sub{color:var(--apagado);margin:0 0 24px}
+label{display:block;font-size:.88rem;font-weight:500;margin-bottom:6px}
+.campo{margin-bottom:16px}
+.entrada{position:relative}
+input{width:100%;min-height:46px;padding:10px 12px;background:var(--panel);color:var(--texto);border:1px solid var(--linea);border-radius:10px;font:inherit}
+input:focus{border-color:var(--base)}
+.entrada input{padding-right:84px}
+.ver{position:absolute;right:6px;top:50%;transform:translateY(-50%);min-height:34px;padding:2px 12px;background:transparent;border:0;border-radius:8px;color:var(--apagado);font:500 .85rem "IBM Plex Sans",sans-serif;cursor:pointer}
+.ver:hover{color:var(--texto);background:var(--panel2)}
+.btn{width:100%;min-height:48px;margin-top:4px;border-radius:12px;border:1px solid var(--base);background:var(--base);color:#04121C;font:600 1rem "IBM Plex Sans",sans-serif;cursor:pointer}
+.btn:hover{filter:brightness(1.1)}
+.btn[disabled]{opacity:.65;cursor:progress}
+.aviso{display:none;margin:0 0 16px;padding:10px 14px;border-radius:10px;font-size:.92rem;border:1px solid var(--linea);background:var(--panel2)}
+.aviso.error{display:block;border-color:var(--mal);color:#FFC2CB;background:rgba(255,107,129,.08)}
+.aviso.info{display:block;border-color:var(--base);color:var(--texto)}
+.volver{display:block;margin-top:20px;text-align:center;color:var(--apagado);font-size:.9rem}
+.volver:hover{color:var(--texto)}
+
+/* Cuentas de demostración */
+.demo{margin-top:28px;border-top:1px solid var(--linea);padding-top:20px}
+.demo h3{margin:0 0 4px;font:600 .92rem "IBM Plex Sans",sans-serif}
+.demo p{margin:0 0 12px;color:var(--apagado);font-size:.85rem}
+.demo ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.cuenta{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;text-align:left;background:var(--panel);border:1px solid var(--linea);border-radius:10px;color:var(--texto);font:inherit;cursor:pointer}
+.cuenta:hover{border-color:var(--apagado)}
+.cuenta b{display:block;font-weight:600}
+.cuenta span{display:block;color:var(--apagado);font-size:.82rem}
+.cuenta code{margin-left:auto;font:500 .82rem "IBM Plex Sans",monospace;color:var(--ruta)}
+
+@keyframes fluir{to{stroke-dashoffset:-24}}
+.fluye{stroke-dasharray:6 6;animation:fluir 1.4s linear infinite}
+@media(prefers-reduced-motion:reduce){.fluye{animation:none}}
+@media(max-width:860px){.pagina{grid-template-columns:1fr}.marca-col{padding:24px 20px;min-height:0;border-right:0;border-bottom:1px solid var(--linea)}.marca-col h1{font-size:1.7rem}.red,.pie-marca,.marca-col p{display:none}.form-col{padding:28px 20px}}
+</style>
+</head>
+<body>
+<div class="pagina">
+  <section class="marca-col" aria-label="ServicioCerca">
+    <a class="logo" href="/" aria-label="ServicioCerca, ir al inicio">
+      <svg width="34" height="34" viewBox="0 0 38 38" aria-hidden="true"><g stroke="#35E0FF" stroke-width="1.6" fill="none"><path d="M19 6 30 12.5v13L19 32 8 25.5v-13Z"/><path d="M19 6v26M8 12.5l22 13M30 12.5 8 25.5" opacity=".4"/></g><circle cx="19" cy="19" r="3.5" fill="#FFC857"/></svg>
+      ServicioCerca
+    </a>
+    <div class="bloque">
+      <h1>La consola para saber <em>qué técnico llega primero</em>.</h1>
+      <p>Cobertura, ruta más rápida y técnico recomendado en una sola pantalla. Cada persona ve y hace solo lo que su rol permite.</p>
+    </div>
+    <svg class="red" viewBox="0 0 400 240" aria-hidden="true">
+      <g stroke="#2A4468" stroke-width="1.5" fill="none"><path d="M60 120 200 40 340 120"/><path d="M60 120 200 200 340 120"/><path d="M200 40 200 200"/></g>
+      <path class="fluye" d="M60 120 200 40 340 120" stroke="#FFC857" stroke-width="2.5" fill="none"/>
+      <g stroke-width="2.5" fill="#070E1B"><path d="M60 100l17 10v20l-17 10-17-10v-20z" stroke="#35E0FF"/><circle cx="200" cy="40" r="12" stroke="#FFC857"/><circle cx="340" cy="120" r="12" stroke="#FFC857"/><circle cx="200" cy="200" r="12" stroke="#9AA8FF"/></g>
+    </svg>
+    <div class="pie-marca">Proyecto académico, ITM · Datos sintéticos</div>
+  </section>
+
+  <main class="form-col">
+    <div class="caja">
+      <h2>Iniciar sesión</h2>
+      <p class="sub">Ingrese con su usuario para abrir la consola de operación.</p>
+      <div id="aviso" class="aviso" role="alert"></div>
+      <form id="form-acceso" novalidate>
+        <div class="campo"><label for="a-usuario">Usuario</label>
+          <input id="a-usuario" name="usuario" autocomplete="username" autocapitalize="none" spellcheck="false" required></div>
+        <div class="campo"><label for="a-clave">Contraseña</label>
+          <div class="entrada"><input id="a-clave" name="clave" type="password" autocomplete="current-password" required>
+            <button type="button" class="ver" id="btn-ver-clave" aria-label="Mostrar contraseña" aria-pressed="false">Mostrar</button></div></div>
+        <button type="submit" class="btn" id="btn-entrar">Entrar</button>
+      </form>
+      <a class="volver" href="/">← Volver al inicio</a>
+
+      <section class="demo" id="demo" hidden aria-label="Cuentas de demostración">
+        <h3>Cuentas de demostración</h3>
+        <p>Elija una para rellenar el formulario y ver qué cambia según el rol.</p>
+        <ul id="cuentas"></ul>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+function h(tag, clase, ...hijos) { const e = document.createElement(tag); if (clase) e.className = clase; hijos.forEach(x => x != null && e.append(x)); return e; }
+function aviso(texto, tipo) { const a = $("#aviso"); a.textContent = texto || ""; a.className = "aviso" + (texto ? " " + tipo : ""); }
+
+const motivo = new URLSearchParams(location.search).get("motivo");
+if (motivo === "expirada") aviso("Su sesión expiró. Inicie sesión de nuevo para continuar.", "info");
+if (motivo === "salida") aviso("Cerró la sesión correctamente.", "info");
+
+$("#btn-ver-clave").addEventListener("click", ev => {
+  const campo = $("#a-clave"), ver = campo.type === "password";
+  campo.type = ver ? "text" : "password";
+  ev.currentTarget.textContent = ver ? "Ocultar" : "Mostrar";
+  ev.currentTarget.setAttribute("aria-pressed", String(ver));
+  ev.currentTarget.setAttribute("aria-label", ver ? "Ocultar contraseña" : "Mostrar contraseña");
+});
+
+$("#form-acceso").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const usuario = $("#a-usuario").value.trim(), clave = $("#a-clave").value, boton = $("#btn-entrar");
+  if (!usuario || !clave) { aviso("Escriba su usuario y su contraseña.", "error"); (usuario ? $("#a-clave") : $("#a-usuario")).focus(); return; }
+  aviso(""); boton.disabled = true; boton.textContent = "Verificando…";
+  try {
+    const r = await fetch("/api/sesion", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({usuario, clave})});
+    if (r.ok) { boton.textContent = "Entrando…"; location.href = "/consola"; return; }
+    const d = await r.json().catch(() => ({}));
+    aviso(d.error || "No se pudo iniciar sesión.", "error");
+    $("#a-clave").select();
+  } catch { aviso("No hay conexión con el servidor. Intente de nuevo.", "error"); }
+  boton.disabled = false; boton.textContent = "Entrar";
+});
+
+(async () => {
+  try {
+    const d = await (await fetch("/api/acceso/demostracion")).json();
+    if (!d.activa) return;
+    const lista = $("#cuentas");
+    d.cuentas.forEach(c => {
+      const b = h("button", "cuenta", h("div", null, h("b", null, c.rol_nombre), h("span", null, c.descripcion)), h("code", null, c.usuario));
+      b.type = "button";
+      b.addEventListener("click", () => { $("#a-usuario").value = c.usuario; $("#a-clave").value = c.clave; aviso(""); $("#btn-entrar").focus(); });
+      lista.append(h("li", null, b));
+    });
+    $("#demo").hidden = false;
+  } catch { /* sin cuentas de demostración: el formulario sigue funcionando */ }
+})();
+</script>
+</body>
+</html>
