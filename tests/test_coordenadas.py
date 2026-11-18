@@ -91,3 +91,19 @@ def test_la_red_de_ejemplo_llega_con_ubicaciones_por_la_api():
     cliente = cliente_como("admin")
     cliente.post("/api/red/ejemplo")
     assert all(n["latitud"] is not None for n in cliente.get("/api/red").json()["nodos"])
+
+
+# ---------- Interfaz ----------
+
+def test_la_consola_trae_el_mapa_geografico_y_el_formulario_de_ubicacion():
+    texto = cliente_como("tecnico").get("/consola").text
+    for ancla in ("vista-esquema", "vista-mapa", "mapa-geo", "mapa-nota"):
+        assert f'id="{ancla}"' in texto
+    assert 'name="latitud"' in texto and 'name="longitud"' in texto
+    assert "/static/vendor/leaflet/leaflet.js" in texto and "/static/vendor/leaflet/leaflet.css" in texto
+
+
+@pytest.mark.parametrize("archivo", ["leaflet.js", "leaflet.css", "LICENSE"])
+def test_leaflet_se_sirve_desde_el_proyecto(archivo):
+    r = cliente_como("tecnico").get(f"/static/vendor/leaflet/{archivo}")
+    assert r.status_code == 200 and len(r.content) > 1000
